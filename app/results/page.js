@@ -7,40 +7,87 @@ function initials(name) {
   return name.split(' ').filter(Boolean).map((w) => w[0]).slice(0, 2).join('');
 }
 
-function partyClass(party) {
-  if (!party) return 'party-other';
-  const p = party.toLowerCase();
-  if (p.startsWith('dem')) return 'party-dem';
-  if (p.startsWith('rep')) return 'party-rep';
-  return 'party-other';
+function partyMeta(party) {
+  const p = (party || '').toLowerCase();
+  if (p.startsWith('dem')) return { label: 'Democrat', cls: 'party-dem' };
+  if (p.startsWith('rep')) return { label: 'Republican', cls: 'party-rep' };
+  return { label: party || 'Independent', cls: 'party-other' };
+}
+
+// Splits "U.S. Representative, District 4" into role + district pill text.
+function splitRole(role) {
+  const m = role.match(/^(.*?),\s*(District .+|At-Large.*)$/i);
+  return m ? { role: m[1], district: m[2] } : { role, district: null };
+}
+
+function termEndLabel(termEnd) {
+  if (!termEnd) return null;
+  const d = new Date(termEnd + 'T00:00:00');
+  return `Term ends ${d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
+}
+
+// Generates a .vcf contact card in the browser — nothing sent to any server.
+// On iPhone, opening the file offers "Create New Contact".
+function saveContact(rep) {
+  const label = [rep.role, rep.party, termEndLabel(rep.termEnd)].filter(Boolean).join(' · ');
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${rep.name}`,
+    `N:${rep.name.split(' ').slice(-1)[0]};${rep.name.split(' ').slice(0, -1).join(' ')};;;`,
+    `ORG:${rep.role}`,
+    rep.phone ? `TEL;TYPE=WORK,VOICE:${rep.phone}` : null,
+    rep.email ? `EMAIL;TYPE=WORK:${rep.email}` : null,
+    rep.website ? `URL:${rep.website}` : null,
+    `NOTE:${label} — saved from xusdemocracy.com`,
+    'END:VCARD'
+  ].filter(Boolean);
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/vcard' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${rep.name.replace(/[^a-z0-9 ]/gi, '')}.vcf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function RepCard({ rep }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const pm = partyMeta(rep.party);
+  const { role, district } = splitRole(rep.role);
   return (
     <div className="rep-card">
-      {rep.photo && !imgFailed ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={rep.photo} alt={rep.name} className="rep-photo" onError={() => setImgFailed(true)} />
-      ) : (
-        <div className="rep-photo rep-photo-fallback">{initials(rep.name)}</div>
-      )}
+      <div className={`rep-avatar ${pm.cls}`}>
+        {rep.photo && !imgFailed ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={rep.photo} alt={rep.name} onError={() => setImgFailed(true)} />
+        ) : (
+          initials(rep.name)
+        )}
+      </div>
       <div className="rep-info">
         <h3>{rep.name}</h3>
-        <p className="rep-role">
-          <span className={`party-dot ${partyClass(rep.party)}`} />
-          {rep.role}
-          {rep.party ? ` · ${rep.party}` : ''}
-        </p>
+        <div className="rep-meta">
+          <span className="rep-role">{role}</span>
+          {district && <span className="pill">{district}</span>}
+          <span className={`party-pill ${pm.cls}`}>{pm.label}</span>
+        </div>
+        {rep.termEnd && <p className="rep-term">{termEndLabel(rep.termEnd)}</p>}
         <div className="rep-actions">
-          {rep.phone && <a href={`tel:${rep.phone}`}>📞 {rep.phone}</a>}
-          {rep.email && <a href={`mailto:${rep.email}`}>📧 Email</a>}
+          {rep.phone && <a href={`tel:${rep.phone}`}>Call</a>}
+          {rep.email && <a href={`mailto:${rep.email}`}>Email</a>}
           {rep.website && (
-            <a href={rep.website} target="_blank" rel="noopener noreferrer">🌐 Website</a>
+            <a href={rep.website} target="_blank" rel="noopener noreferrer">Website</a>
           )}
           {rep.contactForm && (
-            <a href={rep.contactForm} target="_blank" rel="noopener noreferrer">✉️ Contact</a>
+            <a href={rep.contactForm} target="_blank" rel="noopener noreferrer">Contact form</a>
           )}
+          <button className="save-contact-btn" onClick={() => saveContact(rep)}>
+            Save contact
+          </button>
         </div>
       </div>
     </div>
@@ -54,7 +101,7 @@ function Section({ title, subtitle, children, defaultOpen = true }) {
       <button className="section-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
         <span>
           <strong>{title}</strong>
-          {subtitle && <span className="section-subtitle"> — {subtitle}</span>}
+          {subtitle && <span className="section-subtitle">{subtitle}</span>}
         </span>
         <span className="chevron">{open ? '▾' : '▸'}</span>
       </button>
@@ -183,19 +230,17 @@ export default function Results() {
               <span className="election-day-count">{result.election.daysUntil}</span>
               <span>days away</span>
             </div>
-            <div>
+            <div className="election-info">
               <h3>{result.election.name}</h3>
-              <p>
-                <strong>
-                  {new Date(result.election.date + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </strong>
+              <p className="election-date-label">
+                {new Date(result.election.date + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </p>
-              <p>{result.election.description}</p>
+              <p className="election-desc">{result.election.description}</p>
               <p className="election-note">{result.election.note}</p>
               <a
                 className="cta-link"
@@ -203,7 +248,7 @@ export default function Results() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Check your registration / register to vote ({result.stateFullName}) →
+                Check registration / register to vote →
               </a>
             </div>
           </div>

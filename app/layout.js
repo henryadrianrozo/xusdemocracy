@@ -1,4 +1,5 @@
 import './globals.css';
+import Header from '@/components/Header';
 
 export const metadata = {
   title: 'XUsDemocracy — Know Who Represents You',
@@ -10,21 +11,18 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1b2a4a'
+  themeColor: '#0a0c10'
 };
+
+// Applies the saved theme before first paint to avoid a flash of the wrong theme.
+const themeInit = `try{document.documentElement.dataset.theme=localStorage.getItem('xud-theme')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}`;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body>
-        <header className="site-header">
-          <a href="/" className="logo">
-            <span className="logo-mark">★</span> XUsDemocracy
-          </a>
-          <nav>
-            <a href="/why">Why this matters</a>
-          </nav>
-        </header>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <Header />
         <main>{children}</main>
         <footer className="site-footer">
           <p>
