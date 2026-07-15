@@ -30,9 +30,9 @@ const icons = {
 };
 
 const NAV = [
-  { href: '/', icon: icons.find, label: 'Find my officials' },
-  { href: '/calendars', icon: icons.calendar, label: 'Election calendars' },
-  { href: '/why', icon: icons.capitol, label: 'Who we are & why this matters' }
+  { href: '/', icon: icons.find, label: 'Find My Officials' },
+  { href: '/calendars', icon: icons.calendar, label: 'Election Calendars' },
+  { href: '/why', icon: icons.capitol, label: 'Who We Are & Why This Matters' }
 ];
 
 export default function Header() {
@@ -71,7 +71,7 @@ export default function Header() {
         </div>
         <div className="header-right">
           <nav>
-            <a href="/why">Why this matters</a>
+            <a href="/why">Why this matters?</a>
           </nav>
           <button className="theme-toggle" onClick={toggleTheme}>
             <span className="theme-dot" />
@@ -95,7 +95,7 @@ export default function Header() {
             </a>
           ))}
         </nav>
-        <p className="drawer-fine">Nonpartisan · Free · Created by XSL</p>
+        <p className="drawer-fine">Nonpartisan · Free · Created by XUsAll</p>
       </aside>
     </>
   );

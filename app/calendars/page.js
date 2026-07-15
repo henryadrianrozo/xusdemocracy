@@ -24,9 +24,9 @@ export default function Calendars() {
       <section className="hero">
         <h1>Election calendars</h1>
         <p>
-          Subscribe once — your calendar app reminds you automatically, including one week
-          before every Election Day. Free, no account, auto-updates as we add primaries and
-          special elections.
+          Subscribe once and your calendar app reminds you automatically, including one week
+          before every Election Day. Includes your state&apos;s 2026 primaries and runoffs.
+          Free, no account, auto-updates as dates change.
         </p>
         <p className="hero-privacy">
           On iPhone/Mac: tap Subscribe. For Google Calendar: copy the link, then in Google
@@ -50,8 +50,8 @@ export default function Calendars() {
 
       <p className="feedback-note">
         Spot a wrong or outdated date? Email{' '}
-        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> — we&apos;ll
-        fix it fast.
+        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> and
+        we&apos;ll fix it.
       </p>
     </div>
   );

@@ -35,21 +35,21 @@ export async function GET(request, { params }) {
       uid: `2026-${slug(e.label)}`,
       date: e.date.replace(/-/g, ''),
       summary: `🗳️ ${fullName}: ${e.label}`,
-      description: `${e.label} in ${fullName}. Polls are open today — check your ballot before you go.`
+      description: `${e.label} in ${fullName}. Polls are open today. Check your ballot before you go!`
     })),
     {
       uid: '2026-general-reminder',
       date: '20261027',
-      summary: '🗳️ One week to Election Day — make your voting plan',
+      summary: '🗳️ One week to Election Day! Make your voting plan',
       description:
         'The 2026 General Election is Tuesday, November 3. Take some time this week to look up who and what is on your ballot. Find your officials at https://xusdemocracy.com'
     },
     {
       uid: '2026-general',
       date: '20261103',
-      summary: '🇺🇸 Election Day — 2026 General Election',
+      summary: '🇺🇸 Election Day: 2026 General Election',
       description:
-        'All 435 U.S. House seats, 33+ U.S. Senate seats, most governorships, and thousands of state legislative seats. Polls are open today — go vote!'
+        'All 435 U.S. House seats, 33+ U.S. Senate seats, most governorships, and thousands of state legislative seats. Polls are open today. Go vote!'
     }
   ].sort((a, b) => a.date.localeCompare(b.date));
 
@@ -59,7 +59,7 @@ export async function GET(request, { params }) {
     'PRODID:-//XUsDemocracy//Election Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${fullName} Elections — XUsDemocracy`,
+    `X-WR-CALNAME:${fullName} Elections (XUsDemocracy)`,
     'X-WR-CALDESC:Primary and general election dates and reminders. Dates per NCSL and official sources; always verify with your state election office. Free and nonpartisan.',
     'REFRESH-INTERVAL;VALUE=DURATION:P1W'
   ];

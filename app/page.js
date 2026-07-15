@@ -12,15 +12,23 @@ export default function Home() {
   const router = useRouter();
 
   // Prefill from a previously remembered address (stored only in this browser).
+  // First visit of a session with a remembered address goes straight to results;
+  // navigating back here afterward shows the form so it can be changed.
   useEffect(() => {
     try {
       const saved = localStorage.getItem('xud-address');
+      const seenHome = sessionStorage.getItem('xud-home-seen');
+      sessionStorage.setItem('xud-home-seen', '1');
       if (saved) {
         setAddress(saved);
         setRemember(true);
+        if (!seenHome) {
+          sessionStorage.setItem('xud-query', JSON.stringify({ address: saved }));
+          router.replace('/results');
+        }
       }
     } catch {}
-  }, []);
+  }, [router]);
 
   function submitAddress(e) {
     e.preventDefault();
@@ -58,13 +66,13 @@ export default function Home() {
   return (
     <div className="container">
       <section className="hero">
-        <div className="eyebrow">Nonpartisan · Free · For everyone</div>
+        <div className="eyebrow">Connect · Inform · Empower</div>
         <div className="hero-wordmark">
           <Wordmark href={null} />
         </div>
         <h1>Know who represents you.</h1>
-        <p>Enter your address — see your elected officials and your upcoming elections in seconds.</p>
-        <span className="hero-privacy">Knowing is the first step to doing. Let&apos;s keep your reps accountable!</span>
+        <p>Enter your address and see your officials and upcoming elections in seconds.</p>
+        <span className="hero-privacy">Knowing is the first step to doing. Keep your reps accountable!</span>
         <form onSubmit={submitAddress} className="lookup-form">
           <input
             type="text"
@@ -111,7 +119,7 @@ export default function Home() {
           </svg>
           <h2>Contact &amp; accountability</h2>
           <p>
-            Direct phone, email, and office links for every official — so you can reach them and
+            Direct phone, email, and office links for every official, so you can reach them and
             hold them accountable.
           </p>
         </div>
@@ -121,7 +129,7 @@ export default function Home() {
             <polyline points="8,12 11,15 16,9" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <h2>Never miss an election</h2>
-          <p>Primaries, runoffs, and Election Day — see what&apos;s coming and subscribe to your state&apos;s calendar.</p>
+          <p>Primaries, runoffs, and Election Day. See what&apos;s coming and subscribe to your state&apos;s calendar.</p>
         </div>
       </section>
     </div>

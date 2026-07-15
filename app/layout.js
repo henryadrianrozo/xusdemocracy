@@ -2,7 +2,7 @@ import './globals.css';
 import Header from '@/components/Header';
 
 export const metadata = {
-  title: 'XUsDemocracy — Know Who Represents You',
+  title: 'XUsDemocracy | Know Who Represents You',
   description:
     'Enter your address, see your elected officials and your upcoming elections. Free and nonpartisan.',
   metadataBase: new URL('https://xusdemocracy.com')
@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
             project, NCSL, NGA, and official government sources. Always verify election details with your{' '}
             <a href="https://vote.gov" target="_blank" rel="noopener noreferrer">official state election office</a>.
           </p>
-          <p className="footer-xsl">Created by XSL</p>
+          <p className="footer-xsl">Created by XUsAll · Part of the XUsAll family</p>
         </footer>
       </body>
     </html>

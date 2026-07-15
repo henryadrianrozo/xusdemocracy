@@ -39,7 +39,7 @@ function saveContact(rep) {
     rep.phone ? `TEL;TYPE=WORK,VOICE:${rep.phone}` : null,
     rep.email ? `EMAIL;TYPE=WORK:${rep.email}` : null,
     rep.website ? `URL:${rep.website}` : null,
-    `NOTE:${label} — saved from xusdemocracy.com`,
+    `NOTE:${label} · saved from xusdemocracy.com`,
     'END:VCARD'
   ].filter(Boolean);
 
@@ -182,7 +182,7 @@ export default function Results() {
             <RepCard rep={result.federal.houseRep} />
           ) : (
             <p className="empty-note">
-              No voting House member found for this district — residents of DC and US
+              No voting House member found for this district. Residents of DC and US
               territories are represented by a non-voting delegate.
             </p>
           )}
@@ -276,11 +276,11 @@ export default function Results() {
         </Section>
 
         <p className="feedback-note">
-          Something look off — wrong rep, bad date, missing info?{' '}
-          <a href="mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%20%E2%80%94%20something%20looks%20off">
+          Something look off? Wrong rep, bad date, missing info?{' '}
+          <a href="mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%3A%20something%20looks%20off">
             Let us know
           </a>{' '}
-          and we&apos;ll fix it fast.
+          and we&apos;ll fix it.
         </p>
       </div>
     </div>
