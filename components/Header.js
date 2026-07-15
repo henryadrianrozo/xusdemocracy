@@ -3,10 +3,36 @@
 import { useState, useEffect } from 'react';
 import Wordmark from './Wordmark';
 
+const icons = {
+  find: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <circle cx="11" cy="11" r="6.5" />
+      <line x1="16" y1="16" x2="21" y2="21" strokeLinecap="round" />
+    </svg>
+  ),
+  calendar: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <rect x="4" y="5" width="16" height="15" rx="1.5" />
+      <line x1="4" y1="10" x2="20" y2="10" />
+      <line x1="8" y1="3" x2="8" y2="7" strokeLinecap="round" />
+      <line x1="16" y1="3" x2="16" y2="7" strokeLinecap="round" />
+    </svg>
+  ),
+  capitol: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <line x1="4" y1="21" x2="20" y2="21" />
+      <rect x="6" y="10" width="12" height="11" />
+      <polyline points="4,10 12,4 20,10" />
+      <line x1="9" y1="14" x2="9" y2="18" />
+      <line x1="15" y1="14" x2="15" y2="18" />
+    </svg>
+  )
+};
+
 const NAV = [
-  { href: '/', icon: '🔎', label: 'Find my officials' },
-  { href: '/calendars', icon: '📅', label: 'Election calendars' },
-  { href: '/why', icon: '🏛️', label: 'Who we are & why this matters' }
+  { href: '/', icon: icons.find, label: 'Find my officials' },
+  { href: '/calendars', icon: icons.calendar, label: 'Election calendars' },
+  { href: '/why', icon: icons.capitol, label: 'Who we are & why this matters' }
 ];
 
 export default function Header() {
@@ -69,7 +95,7 @@ export default function Header() {
             </a>
           ))}
         </nav>
-        <p className="drawer-fine">Nonpartisan · Free · We never store your address</p>
+        <p className="drawer-fine">Nonpartisan · Free · Created by XSL</p>
       </aside>
     </>
   );

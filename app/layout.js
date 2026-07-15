@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 export const metadata = {
   title: 'XUsDemocracy — Know Who Represents You',
   description:
-    'Enter your address, see your elected officials and your next election. Free, nonpartisan, and we never store your address.',
+    'Enter your address, see your elected officials and your upcoming elections. Free and nonpartisan.',
   metadataBase: new URL('https://xusdemocracy.com')
 };
 
@@ -26,17 +26,17 @@ export default function RootLayout({ children }) {
         <main>{children}</main>
         <footer className="site-footer">
           <p>
-            <strong>We never store your address.</strong> Nonpartisan · No ads · No tracking ·
-            Free forever
+            <strong>Nonpartisan</strong> · No ads · No tracking · Free forever
           </p>
           <p className="footer-fine">
             Data: US Census Bureau, the public-domain{' '}
             <a href="https://github.com/unitedstates/congress-legislators" target="_blank" rel="noopener noreferrer">
               @unitedstates
             </a>{' '}
-            project, and official government sources. Always verify election details with your{' '}
+            project, NCSL, NGA, and official government sources. Always verify election details with your{' '}
             <a href="https://vote.gov" target="_blank" rel="noopener noreferrer">official state election office</a>.
           </p>
+          <p className="footer-xsl">Created by XSL</p>
         </footer>
       </body>
     </html>

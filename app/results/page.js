@@ -75,7 +75,9 @@ function RepCard({ rep }) {
           {district && <span className="pill">{district}</span>}
           <span className={`party-pill ${pm.cls}`}>{pm.label}</span>
         </div>
-        {rep.termEnd && <p className="rep-term">{termEndLabel(rep.termEnd)}</p>}
+        {(rep.termEnd || rep.extra) && (
+          <p className="rep-term">{rep.termEnd ? termEndLabel(rep.termEnd) : rep.extra}</p>
+        )}
         <div className="rep-actions">
           {rep.phone && <a href={`tel:${rep.phone}`}>Call</a>}
           {rep.email && <a href={`mailto:${rep.email}`}>Email</a>}
@@ -186,6 +188,12 @@ export default function Results() {
           )}
         </Section>
 
+        {result.governor && (
+          <Section title={result.governor.role === 'Mayor' ? 'Your Mayor' : 'Your Governor'} subtitle={result.stateFullName}>
+            <RepCard rep={result.governor} />
+          </Section>
+        )}
+
         <Section title="Your State Legislature" subtitle={result.stateFullName}>
           {result.stateLegislators &&
           (result.stateLegislators.stateSenators.length > 0 ||
@@ -224,33 +232,46 @@ export default function Results() {
           )}
         </Section>
 
-        <Section title="Your Next Election">
-          <div className="election-card">
-            <div className="election-date">
-              <span className="election-day-count">{result.election.daysUntil}</span>
-              <span>days away</span>
+        <Section title="Your Upcoming Elections" subtitle={result.stateFullName}>
+          {result.elections.map((el) => (
+            <div className="election-card" key={el.date + el.name}>
+              <div className="election-date">
+                <span className="election-day-count">{el.daysUntil}</span>
+                <span>days away</span>
+              </div>
+              <div className="election-info">
+                <h3>{el.name}</h3>
+                <p className="election-date-label">
+                  {new Date(el.date + 'T00:00:00').toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+                {el.description && <p className="election-desc">{el.description}</p>}
+              </div>
             </div>
-            <div className="election-info">
-              <h3>{result.election.name}</h3>
-              <p className="election-date-label">
-                {new Date(result.election.date + 'T00:00:00').toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </p>
-              <p className="election-desc">{result.election.description}</p>
-              <p className="election-note">{result.election.note}</p>
-              <a
-                className="cta-link"
-                href={result.election.registrationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Check registration / register to vote →
-              </a>
-            </div>
+          ))}
+          <p className="election-note">{result.note}</p>
+          <div className="election-actions">
+            <a
+              className="cta-link"
+              href={result.registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Check registration / register to vote →
+            </a>
+            <a
+              className="cta-link cta-link-blue"
+              href={`webcal://xusdemocracy.com/calendar/${result.state.toLowerCase()}`}
+            >
+              Add {result.stateFullName} elections to your calendar
+            </a>
+            <a className="subscribe-link" href="/calendars">
+              All states →
+            </a>
           </div>
         </Section>
       </div>

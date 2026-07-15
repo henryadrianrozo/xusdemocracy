@@ -47,6 +47,12 @@ export default function Calendars() {
           </div>
         ))}
       </div>
+
+      <p className="feedback-note">
+        Spot a wrong or outdated date? Email{' '}
+        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> — we&apos;ll
+        fix it fast.
+      </p>
     </div>
   );
 }

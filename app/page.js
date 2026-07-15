@@ -1,18 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Wordmark from '@/components/Wordmark';
 
-// The query is passed to the results page via sessionStorage — NOT the URL —
-// so the address never appears in browser history or server request logs.
 export default function Home() {
   const [address, setAddress] = useState('');
+  const [remember, setRemember] = useState(false);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  // Prefill from a previously remembered address (stored only in this browser).
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xud-address');
+      if (saved) {
+        setAddress(saved);
+        setRemember(true);
+      }
+    } catch {}
+  }, []);
+
   function submitAddress(e) {
     e.preventDefault();
+    try {
+      if (remember) localStorage.setItem('xud-address', address);
+      else localStorage.removeItem('xud-address');
+    } catch {}
     sessionStorage.setItem('xud-query', JSON.stringify({ address }));
     router.push('/results');
   }
@@ -44,9 +59,12 @@ export default function Home() {
     <div className="container">
       <section className="hero">
         <div className="eyebrow">Nonpartisan · Free · For everyone</div>
+        <div className="hero-wordmark">
+          <Wordmark href={null} />
+        </div>
         <h1>Know who represents you.</h1>
-        <p>Enter your address. See your elected officials and your next election.</p>
-        <span className="hero-privacy">Your address is never stored. No account needed.</span>
+        <p>Enter your address. See your elected officials and your upcoming elections.</p>
+        <span className="hero-privacy">No account needed. Free forever.</span>
         <form onSubmit={submitAddress} className="lookup-form">
           <input
             type="text"
@@ -59,6 +77,14 @@ export default function Home() {
           />
           <button type="submit">Find my officials</button>
         </form>
+        <label className="remember-row">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+          />
+          Remember my address on this device
+        </label>
         <button className="location-btn" onClick={useMyLocation} disabled={locating}>
           <span className="location-dot" />
           {locating ? 'Getting your location…' : 'Use my current location'}
@@ -76,7 +102,7 @@ export default function Home() {
             <line x1="15" y1="14" x2="15" y2="18" />
           </svg>
           <h2>Every level of government</h2>
-          <p>Congress and your state legislature today. Governors and local officials as we grow.</p>
+          <p>Congress, your governor, and your state legislature today. Local officials as we grow.</p>
         </div>
         <div className="pitch-item">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" strokeWidth="1.4">
@@ -95,7 +121,7 @@ export default function Home() {
             <polyline points="8,12 11,15 16,9" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <h2>Never miss an election</h2>
-          <p>See what&apos;s coming and get registered, with links straight to official sources.</p>
+          <p>Primaries, runoffs, and Election Day — see what&apos;s coming and subscribe to your state&apos;s calendar.</p>
         </div>
       </section>
     </div>

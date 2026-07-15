@@ -5,7 +5,8 @@ import {
   getStateLegislatorsByCoords,
   geocodioEnabled
 } from '@/lib/geocodio';
-import { getNextElection } from '@/lib/elections';
+import { getUpcomingElections } from '@/lib/elections';
+import { getGovernor } from '@/lib/governors';
 
 // PRIVACY: The address/coordinates are used only for this lookup. They are
 // not stored, not logged, and not sent anywhere except the geocoding
@@ -51,12 +52,13 @@ export async function POST(request) {
       stateFullName: geo.stateFullName,
       congressionalDistrict: geo.congressionalDistrict,
       federal,
+      governor: getGovernor(geo.state),
       stateDistricts: {
         senate: geo.stateSenateDistrict,
         house: geo.stateHouseDistrict
       },
       stateLegislators: stateLegs, // null when Geocodio key not configured
-      election: getNextElection(geo.stateFullName)
+      ...getUpcomingElections(geo.state, geo.stateFullName)
     });
   } catch (err) {
     console.error('lookup failed:', err.message); // message only — never the address
