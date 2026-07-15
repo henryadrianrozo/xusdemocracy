@@ -63,8 +63,8 @@ export default function Home() {
           <Wordmark href={null} />
         </div>
         <h1>Know who represents you.</h1>
-        <p>Enter your address. See your elected officials and your upcoming elections.</p>
-        <span className="hero-privacy">No account needed. Free forever.</span>
+        <p>Enter your address — see your elected officials and your upcoming elections in seconds.</p>
+        <span className="hero-privacy">Knowing is the first step to doing. Let&apos;s keep your reps accountable!</span>
         <form onSubmit={submitAddress} className="lookup-form">
           <input
             type="text"

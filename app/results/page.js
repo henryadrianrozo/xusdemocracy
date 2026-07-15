@@ -267,13 +267,21 @@ export default function Results() {
               className="cta-link cta-link-blue"
               href={`webcal://xusdemocracy.com/calendar/${result.state.toLowerCase()}`}
             >
-              Add {result.stateFullName} elections to your calendar
+              Add elections to your calendar
             </a>
             <a className="subscribe-link" href="/calendars">
               All states →
             </a>
           </div>
         </Section>
+
+        <p className="feedback-note">
+          Something look off — wrong rep, bad date, missing info?{' '}
+          <a href="mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%20%E2%80%94%20something%20looks%20off">
+            Let us know
+          </a>{' '}
+          and we&apos;ll fix it fast.
+        </p>
       </div>
     </div>
   );
