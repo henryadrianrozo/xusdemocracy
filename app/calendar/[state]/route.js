@@ -1,9 +1,10 @@
 import { FIPS_TO_STATE, voteGovUrl } from '@/lib/states';
+import { SITE_HOST, SITE_URL } from '@/lib/site';
 import { PRIMARIES_2026 } from '@/lib/primaries';
 
 // Per-state election calendar feed (.ics). Users subscribe once
 // (webcal:// on Apple, "From URL" in Google Calendar) and their own
-// calendar app delivers election reminders — no accounts, no push
+// calendar app delivers election reminders, with no accounts and no push
 // infrastructure. Includes the state's 2026 primaries (NCSL data),
 // a one-week-out reminder, and the November general election.
 
@@ -42,7 +43,7 @@ export async function GET(request, { params }) {
       date: '20261027',
       summary: '🗳️ One week to Election Day! Make your voting plan',
       description:
-        'The 2026 General Election is Tuesday, November 3. Take some time this week to look up who and what is on your ballot. Find your officials at https://xusdemocracy.com'
+        `The 2026 General Election is Tuesday, November 3. Take some time this week to look up who and what is on your ballot. Find your officials at ${SITE_URL}`
     },
     {
       uid: '2026-general',
@@ -67,13 +68,13 @@ export async function GET(request, { params }) {
   for (const ev of events) {
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${ev.uid}-${code.toLowerCase()}@xusdemocracy.com`,
+      `UID:${ev.uid}-${code.toLowerCase()}@${SITE_HOST}`,
       `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
       `DTSTART;VALUE=DATE:${ev.date}`,
       `DTEND;VALUE=DATE:${icsDate(ev.date)}`,
       `SUMMARY:${ev.summary}`,
       `DESCRIPTION:${ev.description} Register or check your registration: ${registerUrl}`,
-      `URL:https://xusdemocracy.com`,
+      `URL:${SITE_URL}`,
       'END:VEVENT'
     );
   }
