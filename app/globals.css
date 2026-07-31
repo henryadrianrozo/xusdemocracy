@@ -71,7 +71,7 @@ a { color: var(--blue); }
 .wordmark .wm-us { color: var(--text); }
 .wordmark .wm-democracy { color: var(--blue); }
 
-/* Header — menu on the left, wordmark dead center, theme toggle on the right.
+/* Header: menu on the left, wordmark dead center, theme toggle on the right.
    The side columns share a width so the wordmark stays truly centered. */
 .site-header {
   display: grid;
@@ -253,7 +253,7 @@ a { color: var(--blue); }
   padding: 0.75rem 1rem;
 }
 
-/* Pitch cards — everything centered, icons included. */
+/* Pitch cards. Everything centered, icons included. */
 .pitch {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -460,9 +460,32 @@ a { color: var(--blue); }
 .party-pill.party-dem { color: var(--dem); background: color-mix(in srgb, var(--dem) 10%, transparent); }
 .party-pill.party-rep { color: var(--rep); background: color-mix(in srgb, var(--rep) 10%, transparent); }
 .rep-term { color: var(--muted); font-size: 0.82rem; margin: 0 0 12px; }
+
+/* Term facts: how long they have served, when they were last elected, when
+   the current term ends. Dot-separated so it reads as one line. */
+.rep-facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  margin: 0 0 12px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.rep-facts li { display: inline-flex; align-items: center; }
+.rep-facts li + li::before {
+  content: '·';
+  margin-right: 8px;
+  opacity: 0.6;
+}
+
 .rep-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .rep-actions a,
 .save-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
   font-size: 0.84rem;
   color: var(--text);
@@ -476,6 +499,9 @@ a { color: var(--blue); }
 }
 .rep-actions a:hover,
 .save-contact-btn:hover { border-color: var(--muted); }
+.btn-icon { flex-shrink: 0; opacity: 0.75; }
+.rep-actions a:hover .btn-icon,
+.save-contact-btn:hover .btn-icon { opacity: 1; }
 
 /* Enlarged portrait */
 .portrait-overlay {
@@ -569,6 +595,78 @@ a { color: var(--blue); }
 .election-desc { color: var(--muted); }
 .election-note { color: var(--muted); font-size: 0.85rem; font-style: italic; margin: 4px 0 24px; }
 
+/* The rest of the federal government: President, Cabinet, Supreme Court.
+   Deliberately quieter than the rep cards above it. */
+.national-block {
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--text) 2%, transparent);
+}
+.national-heading {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.national-lede {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin-bottom: 14px;
+  max-width: 60ch;
+}
+.national-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+.national-row-link { text-decoration: none; }
+.national-row-link:hover .national-name { text-decoration: underline; }
+.national-name { color: var(--text); font-weight: 600; font-size: 0.94rem; }
+.national-role { color: var(--muted); font-size: 0.86rem; }
+
+.national-details { border-top: 1px solid var(--border); }
+.national-details summary {
+  cursor: pointer;
+  padding: 11px 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.national-details summary:hover { color: var(--blue); }
+.national-count {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.national-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  max-width: 58ch;
+}
+.national-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.national-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 10px;
+  padding: 6px 0;
+}
+.national-list li + li { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+
 /* Registration deadline callout */
 .deadline-box {
   background: color-mix(in srgb, var(--red) 6%, var(--surface));
@@ -579,6 +677,7 @@ a { color: var(--blue); }
 }
 .deadline-box h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .deadline-box p { color: var(--muted); font-size: 0.92rem; margin: 0; }
+.deadline-pointer { margin-top: 8px !important; font-size: 0.85rem !important; opacity: 0.85; }
 
 /* One action per block, each with a line explaining what it does. */
 .action-block { margin-bottom: 28px; }

@@ -1,4 +1,4 @@
-# XUsDemocracy — project brain
+# XUsDemocracy project brain
 
 Read this first. It records what the project is, where every piece of data comes
 from, what rots and when, and what is deliberately not built yet.
@@ -36,12 +36,12 @@ error asking for street + ZIP.
 
 **Privacy is a real constraint, not a slogan.** `app/api/lookup/route.js` logs
 `err.message` only, never the request body. Nothing is persisted server-side.
-The one piece of state that exists — the saved address — lives in the user's
+The one piece of state that exists, the saved address, lives in the user's
 own `localStorage` and never leaves the browser.
 
 ---
 
-## Data inventory — READ BEFORE TRUSTING ANYTHING
+## Data inventory: READ BEFORE TRUSTING ANYTHING
 
 | What | File | Source | Live or static? | Rots when |
 |---|---|---|---|---|
@@ -49,9 +49,11 @@ own `localStorage` and never leaves the browser.
 | Senators + House rep | `lib/federal.js` | [@unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators) | **Live**, 24h cache | Self-maintaining. Community-run, usually updated within days of a change. |
 | Congressional photos | `lib/federal.js` | unitedstates/images | **Live** | Self-maintaining. New members lag by weeks. |
 | State legislators | `lib/geocodio.js` | Geocodio → OpenStates | **Live** *(needs `GEOCODIO_API_KEY`)* | Self-maintaining. Free tier = 2,500 lookups/day. |
-| **Governors** | `lib/governors.js` | [NGA roster](https://www.nga.org/governors/) | **STATIC — hand-maintained** | **After every gubernatorial election and any mid-term succession.** Most volatile thing here. |
-| **Primary dates** | `lib/primaries.js` | NCSL 2026 table | **STATIC — 2026 only** | **Hard-expires after Nov 2026.** No 2027/2028 data exists yet. |
-| **General election** | `lib/elections.js` | Statute | **STATIC — 2026 only** | **Hard-expires 3 Nov 2026.** `GENERAL_2026` is a single hardcoded object. |
+| **Governors** | `lib/governors.js` | [NGA roster](https://www.nga.org/governors/) | **STATIC, hand-maintained** | **After every gubernatorial election and any mid-term succession.** Most volatile thing here. |
+| Governor photos | `lib/governors.js` | NGA headshots, hotlinked | Static URLs | If NGA moves a file. `RepCard` falls back to a monogram on image error, so it degrades quietly. |
+| **President, Cabinet, SCOTUS** | `lib/national.js` | [whitehouse.gov](https://www.whitehouse.gov/administration/the-cabinet/), [supremecourt.gov](https://www.supremecourt.gov/about/biographies.aspx) | **STATIC, hand-maintained** | Cabinet churns a few times per term. President and VP change Jan 2029. Court changes on death or retirement. |
+| **Primary dates** | `lib/primaries.js` | NCSL 2026 table | **STATIC, 2026 only** | **Hard-expires after Nov 2026.** No 2027/2028 data exists yet. |
+| **General election** | `lib/elections.js` | Statute | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026.** `GENERAL_2026` is a single hardcoded object. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
 | Registration deadlines | `lib/registration.js` | CEIR 2026 survey | Static, statutory | When a legislature amends election law. Re-check each spring. |
 | FIPS ↔ state | `lib/states.js` | Census | Static | Never. |
@@ -65,35 +67,45 @@ why the two datasets derived from them carry the weakest provenance.
 
 Verification status as of **30 July 2026**:
 
-- **Governors — fully verified.** All 50 names and parties re-checked against
+- **Governors: fully verified.** All 50 names and parties re-checked against
   the live NGA roster; every entry matched. NGA is fetchable, so repeat this
   cheaply and often.
-- **Legislature sizes — fully verified.** Every state's total cross-checked
+- **Legislature sizes: fully verified.** Every state's total cross-checked
   against `openstates/people`, which is scraped from official state legislature
   websites. All 52 matched within vacancy margins. Three expected deviations
   are documented in the file header.
-- **Registration deadlines — spot-verified only.** Florida confirmed against
+- **Registration deadlines: spot-verified only.** Florida confirmed against
   the Florida Department of State's own deadline notice (20 July for the
   18 Aug primary = exactly 29 days, which also validates the "N days before any
   election" model). California confirmed via vote.gov. **The other 48 are
   single-sourced.**
-- **Primary dates — spot-verified only.** Florida's 18 Aug 2026 primary
+- **Primary dates: spot-verified only.** Florida's 18 Aug 2026 primary
   confirmed against the Florida Department of State. The rest come from NCSL's
   statute-cited table and have not been individually re-checked.
+- **Governor photos: fully verified (31 July 2026).** NGA pairs each headshot
+  with the governor's name in the image `alt` attribute, so all 51 were matched
+  on exact name rather than guessed, and every URL was confirmed to return 200.
+- **President, Cabinet, Supreme Court: fully verified (31 July 2026).** Scraped
+  directly from whitehouse.gov and supremecourt.gov. Both serve plain HTML to a
+  browser user agent, so re-checking is one curl command (recorded in the header
+  of `lib/national.js`). Note the roster holds details that are easy to get
+  wrong from memory: the department is currently **Secretary of War**, the
+  Attorney General is listed as **Acting**, and Markwayne Mullin is at DHS.
+  Record titles exactly as published; do not normalize them.
 
 Every screen that shows a date also tells the user to confirm with their state
 election office, and links them there. Keep that. It is the honest hedge for
 single-sourced data.
 
-### The maintenance cliff — November 2026
+### The maintenance cliff: November 2026
 
 This is the single most important thing to know about the project. On
 **4 November 2026** three static datasets go stale simultaneously:
 
-1. `lib/elections.js` — `GENERAL_2026` is in the past; the elections list
+1. `lib/elections.js`: `GENERAL_2026` is in the past, so the elections list
    empties out and the officials page loses its Elections section content.
-2. `lib/primaries.js` — every 2026 date is in the past; `.ics` feeds go empty.
-3. `lib/governors.js` — 36 governorships are decided; names and parties change.
+2. `lib/primaries.js`: every 2026 date is in the past, so `.ics` feeds go empty.
+3. `lib/governors.js`: 36 governorships are decided, so names and parties change.
 
 Fixing this properly means replacing the hardcoded 2026 objects with a
 multi-cycle structure. See "Next moves" below.
@@ -129,7 +141,15 @@ multi-cycle structure. See "Next moves" below.
   deploys and the legacy domain both work.
 - **Voice:** professional and plainspoken. Explain, don't lecture. Short
   sentences. No jargon without a gloss, no exclamation points beyond the one on
-  the home page, no partisanship of any kind — ever.
+  the home page, and no partisanship of any kind, ever.
+- **No em dashes or en dashes anywhere.** Not in copy, comments, docs, or commit
+  messages. They read as AI-generated and undermine the site's credibility.
+  Rewrite the sentence with a comma, colon, or period instead of swapping in a
+  hyphen. Check before committing:
+  `grep -rn '—\|–' --include="*.js" --include="*.md" . | grep -v node_modules`
+
+  The only legitimate hit is that grep line itself, which has to contain the
+  characters in order to match them. Anything else is a regression.
 - Comments explain *why*, especially for anything data-source or
   privacy-related. Future maintainers need the provenance more than the syntax.
 
@@ -142,11 +162,25 @@ multi-cycle structure. See "Next moves" below.
 
 ## Local development
 
-⚠️ **Node is not currently installed on this Mac.** `npm install`, `npm run
-dev`, and `npm run build` cannot run locally until it is. Until then the only
-way to verify a change is to push and let Vercel build — use a branch and check
-the preview deployment. Installing Node (e.g. via Homebrew) removes this
-constraint and is worth doing.
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+Node v24 is installed at `/usr/local/bin/node` (added 31 July 2026).
+
+**Known gotcha: state legislators look broken on localhost.** There is no
+`.env.local` in the repo, so `GEOCODIO_API_KEY` is unset and
+`lib/geocodio.js → geocodioEnabled()` returns false. Census still returns the
+district *numbers*, so the page shows "State Senate District 3" with no person
+attached. This is not a bug and production is unaffected. To match production
+locally:
+
+```bash
+npx vercel link && npx vercel env pull .env.local   # both interactive
+```
+
+Do not re-diagnose this as a data problem. Check for `.env.local` first.
 
 ---
 
@@ -161,12 +195,12 @@ constraint and is worth doing.
 
 **Product:**
 4. **Local officials.** The most-requested missing layer and the hardest data
-   problem — there is no national feed for ~19,000 municipalities. The
+   problem, because there is no national feed for ~19,000 municipalities. The
    realistic path is top-N cities by population, hand-curated, expanding over
    time, with honest "not covered yet" messaging everywhere else.
 5. **Issue → official routing.** "Potholes" → city council; "taxes" → Congress.
    This is the killer feature and it depends entirely on #4 existing first.
-6. Message tracking and representative accountability — the long-term vision.
+6. Message tracking and representative accountability, the long-term vision.
    Needs accounts, which breaks the current no-database promise. Design that
    trade-off deliberately when the time comes.
 
@@ -175,5 +209,5 @@ constraint and is worth doing.
    Geocodio tier in minutes and silently degrade the site to federal-only.
 8. Governor cards have no photos and there is no photo source for them, so they
    always render a monogram. State legislators without an OpenStates photo do
-   the same. The monogram is deliberate — showing the wrong person's face on a
+   the same. The monogram is deliberate, because showing the wrong face on a
    civic site is worse than showing initials.

@@ -10,7 +10,7 @@ function Home() {
   const [error, setError] = useState(null);
   const router = useRouter();
   const params = useSearchParams();
-  // /?new=1 means "I want to look up a different address" — skip the
+  // /?new=1 means "I want to look up a different address", so skip the
   // auto-redirect that normally sends returning visitors to their officials.
   const forceNew = params.get('new') === '1';
 

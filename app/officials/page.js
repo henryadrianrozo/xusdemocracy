@@ -31,7 +31,7 @@ function MajorSection({ id, title, lede, children }) {
 }
 
 // Offered once, after a successful lookup, when nothing is saved yet.
-// Everything stays in this browser — there is no account and no server copy.
+// Everything stays in this browser. There is no account and no server copy.
 function SavePrompt({ address, onSaved, onDismiss }) {
   return (
     <div className="save-prompt" role="region" aria-label="Save this address">
@@ -39,7 +39,7 @@ function SavePrompt({ address, onSaved, onDismiss }) {
         <strong>Want to skip the search next time?</strong>
         <p>
           We can remember this address on this device so XUsDemocracy opens straight to your
-          officials. It stays in your browser — no account, nothing sent to us.
+          officials. It stays in your browser, with no account and nothing sent to us.
         </p>
       </div>
       <div className="save-prompt-actions">
@@ -50,6 +50,76 @@ function SavePrompt({ address, onSaved, onDismiss }) {
           Not now
         </button>
       </div>
+    </div>
+  );
+}
+
+// The President, Cabinet, and Supreme Court sit at the bottom of the federal
+// section and stay collapsed, because they are not offices where an individual
+// constituent has standing the way they do with their own senators and rep.
+function NationalBlock({ national }) {
+  if (!national) return null;
+  const { president, vicePresident, cabinet, supremeCourt } = national;
+
+  return (
+    <div className="national-block">
+      <h3 className="national-heading">The rest of the federal government</h3>
+      <p className="national-lede">
+        You elect your senators and your representative directly. These offices you do not,
+        apart from the President and Vice President, who run nationally. They shape federal
+        policy, but your own members of Congress are the ones who answer to you.
+      </p>
+
+      {[president, vicePresident].map((p) => (
+        <a
+          key={p.name}
+          className="national-row national-row-link"
+          href={p.website}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="national-name">{p.name}</span>
+          <span className="national-role">{p.role}</span>
+        </a>
+      ))}
+
+      <details className="national-details">
+        <summary>
+          The Cabinet <span className="national-count">{cabinet.length}</span>
+        </summary>
+        <p className="national-note">
+          Appointed by the President and confirmed by the Senate. Each one runs a department
+          that carries out federal law.
+        </p>
+        <ul className="national-list">
+          {cabinet.map((m) => (
+            <li key={m.name}>
+              <span className="national-name">{m.name}</span>
+              <span className="national-role">{m.role}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <details className="national-details">
+        <summary>
+          The Supreme Court <span className="national-count">{supremeCourt.length}</span>
+        </summary>
+        <p className="national-note">
+          Nominated by a President, confirmed by the Senate, and seated for life. They have the
+          final say on what federal law and the Constitution mean.
+        </p>
+        <ul className="national-list">
+          {supremeCourt.map((j) => (
+            <li key={j.name}>
+              <span className="national-name">{j.name}</span>
+              <span className="national-role">
+                {j.role}, seated {j.seated} under {j.nominatedBy}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
@@ -65,8 +135,8 @@ export default function Officials() {
   const router = useRouter();
 
   useEffect(() => {
-    // Normally the home page hands us a query. Landing here directly — from
-    // the "My Officials" nav link or a bookmark — falls back to the saved
+    // Normally the home page hands us a query. Landing here directly, from
+    // the "My Officials" nav link or a bookmark, falls back to the saved
     // address so the page still works instead of bouncing to the form.
     let raw = sessionStorage.getItem('xud-query');
     if (!raw) {
@@ -98,8 +168,8 @@ export default function Officials() {
         if (!res.ok) throw new Error(data.error || 'Lookup failed');
         setResult(data);
 
-        // Only offer to remember a typed address — a one-off GPS fix isn't
-        // something we can re-run later.
+        // Only offer to remember a typed address, since a one-off GPS fix is
+        // not something we can re-run later.
         try {
           const already = localStorage.getItem('xud-address');
           setSavedAddress(already);
@@ -170,6 +240,7 @@ export default function Officials() {
     stateFullName,
     congressionalDistrict: cd,
     federal,
+    national,
     governor,
     legislature,
     stateDistricts,
@@ -180,8 +251,8 @@ export default function Officials() {
     note
   } = result;
 
-  // cd is 0 for at-large states and negative when the geocoder couldn't
-  // pin a district — say less rather than something wrong.
+  // cd is 0 for at-large states and negative when the geocoder could not pin
+  // a district, so say less rather than something wrong.
   const districtPhrase =
     cd === 0
       ? `${stateFullName}'s at-large district`
@@ -190,18 +261,21 @@ export default function Officials() {
         : null;
 
   const federalLede =
-    `Congress writes federal law — taxes, immigration, the military, and the national budget. ` +
-    `It has two chambers. Every state elects two U.S. senators who represent the whole state, ` +
-    `and the House is divided by population into 435 districts, each electing one representative.` +
+    'Congress writes federal law, including taxes, immigration, the military, and the ' +
+    'national budget. It has two chambers. Every state elects two U.S. senators, who ' +
+    'represent the whole state and serve six-year terms. The House is divided by population ' +
+    'into 435 districts, each electing one representative to a two-year term, so the entire ' +
+    'House is up for election every other year.' +
     (districtPhrase ? ` You live in ${districtPhrase}.` : '');
 
   const stateLede = (() => {
     const base =
-      'Your state government decides most of what you actually live with day to day: schools, ' +
-      'roads, policing, housing, and health care rules. The governor runs the executive branch.';
+      'Your state government decides most of what you actually live with day to day: ' +
+      'schools, roads, policing, housing, and health care rules. The governor runs the ' +
+      'executive branch.';
     if (!legislature) return base;
     if (legislature.unicameral) {
-      return `${base} ${stateFullName}'s ${legislature.name} is unicameral — ${legislature.upperSeats} members, one chamber, no house of representatives — so you have a single legislator here.`;
+      return `${base} ${stateFullName}'s ${legislature.name} is unicameral, meaning ${legislature.upperSeats} members in a single chamber with no house of representatives, so you have one legislator here.`;
     }
     return `${base} ${stateFullName}'s ${legislature.name} has ${legislature.upperSeats} senators and ${legislature.lowerSeats} members of the ${legislature.lower}, and you are represented by one of each.`;
   })();
@@ -241,10 +315,10 @@ export default function Officials() {
         )}
 
         <p className="page-note">
-          Every card below carries the contact details each official publishes — office phone,
+          Every card below carries the contact details each official publishes: office phone,
           website, and a contact form where they offer one. <strong>Save contact</strong> drops
-          them into your phone&apos;s address book, so reaching out later takes seconds instead of
-          a search.
+          them into your phone&apos;s address book, so reaching out later takes seconds instead
+          of a search.
         </p>
 
         <MajorSection id="federal" title="Federal" lede={federalLede}>
@@ -259,6 +333,7 @@ export default function Officials() {
               elect a delegate who serves on committees but cannot vote on final passage.
             </p>
           )}
+          <NationalBlock national={national} />
         </MajorSection>
 
         <MajorSection id="state" title="State" lede={stateLede}>
@@ -301,8 +376,18 @@ export default function Officials() {
         <MajorSection
           id="elections"
           title="Elections"
-          lede="Primaries decide who gets on the November ballot, and far fewer people vote in them — which makes each ballot cast there count for more. Here is what is next where you live."
+          lede="Primaries decide who gets on the November ballot, and far fewer people vote in them, which makes each ballot cast there count for more. Here is what is next where you live."
         >
+          {registrationDeadline && (
+            <div className="deadline-box">
+              <h3>{registrationDeadline.headline}</h3>
+              <p>{registrationDeadline.detail}</p>
+              <p className="deadline-pointer">
+                The link to register or check your registration is below the dates.
+              </p>
+            </div>
+          )}
+
           {elections.map((el) => (
             <div className="election-card" key={el.date + el.name}>
               <div className="election-date">
@@ -318,19 +403,12 @@ export default function Officials() {
           ))}
           <p className="election-note">{note}</p>
 
-          {registrationDeadline && (
-            <div className="deadline-box">
-              <h3>{registrationDeadline.headline}</h3>
-              <p>{registrationDeadline.detail}</p>
-            </div>
-          )}
-
           <div className="action-block">
             <h3>Register, or confirm you still are</h3>
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
-              vote.gov is the federal government&apos;s official portal; it hands you straight to{' '}
-              {stateFullName}&apos;s election office.
+              vote.gov is the federal government&apos;s official portal, and it hands you
+              straight to {stateFullName}&apos;s election office.
             </p>
             <a className="cta-link" href={registrationUrl} target="_blank" rel="noopener noreferrer">
               Check or update my registration →

@@ -9,6 +9,7 @@ import {
 import { getUpcomingElections } from '@/lib/elections';
 import { getGovernor } from '@/lib/governors';
 import { getLegislature } from '@/lib/legislatures';
+import { getNational } from '@/lib/national';
 import { getRegistrationDeadline } from '@/lib/registration';
 import { FIPS_TO_STATE } from '@/lib/states';
 
@@ -78,6 +79,7 @@ export async function POST(request) {
       stateFullName: geo.stateFullName,
       congressionalDistrict: geo.congressionalDistrict,
       federal,
+      national: getNational(),
       governor: getGovernor(geo.state),
       legislature: getLegislature(geo.state),
       stateDistricts: {

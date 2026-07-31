@@ -31,7 +31,7 @@ export default function Calendars() {
         </p>
         <span className="hero-privacy">
           Apple Calendar and Outlook take the subscribe link directly. Google opens its
-          &ldquo;add by URL&rdquo; screen — confirm there and it&apos;s in.
+          &ldquo;add by URL&rdquo; screen, where you confirm and it&apos;s in.
         </span>
       </section>
 

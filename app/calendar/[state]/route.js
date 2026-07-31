@@ -4,7 +4,7 @@ import { PRIMARIES_2026 } from '@/lib/primaries';
 
 // Per-state election calendar feed (.ics). Users subscribe once
 // (webcal:// on Apple, "From URL" in Google Calendar) and their own
-// calendar app delivers election reminders — no accounts, no push
+// calendar app delivers election reminders, with no accounts and no push
 // infrastructure. Includes the state's 2026 primaries (NCSL data),
 // a one-week-out reminder, and the November general election.
 
