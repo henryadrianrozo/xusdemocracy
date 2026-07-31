@@ -30,6 +30,11 @@ function Home() {
 
   function submitAddress(e) {
     e.preventDefault();
+    // A deliberate new search re-opens the offer to save. Declining once
+    // should quiet the prompt for that result, not silence it forever.
+    try {
+      localStorage.removeItem('xud-save-declined');
+    } catch {}
     sessionStorage.setItem('xud-query', JSON.stringify({ address }));
     router.push('/officials');
   }

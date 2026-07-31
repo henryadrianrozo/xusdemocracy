@@ -342,10 +342,14 @@ a { color: var(--blue); }
 }
 .save-prompt-no:hover { color: var(--text); border-color: var(--muted); }
 
-/* The three big breaks: Federal / State / Elections. */
+/* The three big breaks: Federal / State / Elections. Collapsible for quick
+   navigation, open by default, nothing persisted. */
 .major { margin-top: 52px; }
 .major-title {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: clamp(1.65rem, 4.5vw, 2.2rem);
   font-weight: 800;
   letter-spacing: -0.025em;
@@ -353,7 +357,10 @@ a { color: var(--blue); }
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
+  cursor: pointer;
+  list-style: none;
 }
+.major-title::-webkit-details-marker { display: none; }
 .major-title::after {
   content: '';
   position: absolute;
@@ -364,6 +371,39 @@ a { color: var(--blue); }
   background: var(--red);
   border-radius: 2px;
 }
+.major-title:hover { color: var(--blue); }
+/* Triangle that points right when closed and down when open. */
+.major-caret {
+  width: 0;
+  height: 0;
+  flex-shrink: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid var(--muted);
+  transition: transform 0.15s ease;
+  transform-origin: 30% 50%;
+}
+.major[open] > .major-title .major-caret { transform: rotate(90deg); }
+
+/* One step down from a major title. Used for Congress, Executive, and the
+   Elections action blocks. */
+.sub-title {
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin: 26px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.major-body > .sub-title:first-child { margin-top: 0; }
+.sub-lede {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: -2px 0 14px;
+  max-width: 60ch;
+}
 .major-lede {
   color: var(--muted);
   font-size: 0.95rem;
@@ -371,9 +411,9 @@ a { color: var(--blue); }
   margin-bottom: 22px;
   max-width: 62ch;
 }
-.major > .rep-card,
-.major > .election-card,
-.major > .empty-note { margin-bottom: 14px; }
+.major-body > .rep-card,
+.major-body > .election-card,
+.major-body > .empty-note { margin-bottom: 14px; }
 
 /* Rep cards */
 .rep-card {
@@ -657,15 +697,61 @@ a { color: var(--blue); }
   margin: 0 0 10px;
   max-width: 58ch;
 }
+.national-note-tight { margin-top: 14px; }
 .national-list { list-style: none; padding: 0; margin: 0 0 12px; }
 .national-list li {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
-  gap: 3px 10px;
-  padding: 6px 0;
+  gap: 10px;
+  padding: 7px 0;
 }
 .national-list li + li { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+.national-entry { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.national-does {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+/* Position in the line of presidential succession. */
+.national-rank {
+  flex-shrink: 0;
+  width: 22px;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Branch grouping inside the national block. */
+.branch-group { margin-top: 6px; }
+.branch-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 2px;
+}
+.branch-note {
+  color: var(--muted);
+  font-size: 0.83rem;
+  line-height: 1.6;
+  margin: 8px 0 4px;
+  max-width: 62ch;
+}
+.branch-crosslink { margin-top: 18px; font-size: 0.9rem; }
+.branch-crosslink a { text-decoration: none; font-weight: 600; }
+.branch-crosslink a:hover { text-decoration: underline; }
+
+/* Extra context on a card that a fact chip cannot carry. */
+.rep-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  margin: -4px 0 12px;
+  max-width: 62ch;
+}
 
 /* Registration deadline callout */
 .deadline-box {

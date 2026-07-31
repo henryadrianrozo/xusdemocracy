@@ -1,11 +1,13 @@
 export const metadata = {
-  title: 'Why this matters | XUsDemocracy'
+  title: 'Who We Are | XUsDemocracy',
+  description:
+    'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.'
 };
 
-export default function Why() {
+export default function WhoWeAre() {
   return (
     <article className="prose">
-      <h1>Why this matters</h1>
+      <h1>Who we are</h1>
       <p>
         Most Americans can name the President. Far fewer can name their House member. Almost
         nobody can name their state senator, the person who votes on their schools, their
@@ -19,22 +21,29 @@ export default function Why() {
         your life, you know whose name to look for on your ballot, and you know exactly who is
         accountable to you. Representation only works when constituents can see it.
       </p>
-      <h2>Your vote counts, and it&apos;s counted carefully</h2>
-      <p>
-        American elections are run by your neighbors: county and city election officials,
-        overseen publicly, with paper trails, audits, and observers from both parties. Errors
-        are caught because the system is built to catch them. Distrust thrives on distance. The
-        closer we get to how our political system actually works, and the more engaged and
-        knowledgeable we become, the better the outcomes for everyone.
-      </p>
       <h2>What we believe</h2>
       <p>
         This project is nonpartisan, free, and built to empower people. We don&apos;t care who
         you vote for. We care that you know who represents you, when your next election is, and
         how to make your voice heard. That&apos;s it. That&apos;s the whole mission.
       </p>
+      <h2>How we handle your address</h2>
       <p>
-        <a href="/">← Find your officials</a>
+        Your address is used for one lookup and then discarded. We don&apos;t store it, we
+        don&apos;t log it, and we don&apos;t sell it, because we never have it in the first
+        place. If you ask us to remember it, it is saved in your own browser and never sent
+        anywhere. There are no accounts, no ads, and no tracking.
+      </p>
+      <h2>When we get something wrong</h2>
+      <p>
+        Some of our data comes from live government feeds and some is maintained by hand, which
+        means errors are possible. If a name, date, or district looks wrong, tell us at{' '}
+        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> and
+        we&apos;ll fix it. We would rather be corrected than be confidently wrong.
+      </p>
+      <p>
+        New here? Start with <a href="/democracy">how our democracy works</a>, or{' '}
+        <a href="/?new=1">find your officials</a>.
       </p>
     </article>
   );
