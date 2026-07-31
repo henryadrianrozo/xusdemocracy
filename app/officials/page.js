@@ -20,14 +20,25 @@ function longDate(iso) {
   });
 }
 
+// Collapsible so a reader can fold away what they do not need and get to what
+// they want. Native details, open every time, nothing persisted.
 function MajorSection({ id, title, lede, children }) {
   return (
-    <section className="major" id={id}>
-      <h2 className="major-title">{title}</h2>
-      {lede && <p className="major-lede">{lede}</p>}
-      {children}
-    </section>
+    <details className="major" id={id} open>
+      <summary className="major-title">
+        <span className="major-caret" aria-hidden="true" />
+        {title}
+      </summary>
+      <div className="major-body">
+        {lede && <p className="major-lede">{lede}</p>}
+        {children}
+      </div>
+    </details>
   );
+}
+
+function SubTitle({ children }) {
+  return <h3 className="sub-title">{children}</h3>;
 }
 
 // Offered once, after a successful lookup, when nothing is saved yet.
@@ -54,72 +65,108 @@ function SavePrompt({ address, onSaved, onDismiss }) {
   );
 }
 
-// The President, Cabinet, and Supreme Court sit at the bottom of the federal
-// section and stay collapsed, because they are not offices where an individual
-// constituent has standing the way they do with their own senators and rep.
+function PersonList({ people, numbered = false }) {
+  return (
+    <ol className="national-list">
+      {people.map((m, i) => (
+        <li key={m.name}>
+          {numbered && <span className="national-rank">{i + 1}</span>}
+          <span className="national-entry">
+            <span className="national-name">{m.name}</span>
+            <span className="national-role">{m.role}</span>
+            {m.does && <span className="national-does">{m.does}</span>}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+// Everyone here reached office without voters choosing them, which is the
+// whole reason this block is separate from the cards above it. Grouped by
+// branch so the Cabinet reads as part of the executive rather than a list
+// floating on its own.
 function NationalBlock({ national }) {
   if (!national) return null;
-  const { president, vicePresident, cabinet, supremeCourt } = national;
+  const { departments, cabinetRank, leadership, supremeCourt } = national;
 
   return (
     <div className="national-block">
       <h3 className="national-heading">The rest of the federal government</h3>
       <p className="national-lede">
-        You elect your senators and your representative directly. These offices you do not,
-        apart from the President and Vice President, who run nationally. They shape federal
-        policy, but your own members of Congress are the ones who answer to you.
+        Nobody below is elected by voters. They are appointed, confirmed, or chosen by other
+        officials, and they still shape a great deal of federal policy.
       </p>
 
-      {[president, vicePresident].map((p) => (
-        <a
-          key={p.name}
-          className="national-row national-row-link"
-          href={p.website}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span className="national-name">{p.name}</span>
-          <span className="national-role">{p.role}</span>
-        </a>
-      ))}
-
-      <details className="national-details">
-        <summary>
-          The Cabinet <span className="national-count">{cabinet.length}</span>
-        </summary>
-        <p className="national-note">
-          Appointed by the President and confirmed by the Senate. Each one runs a department
-          that carries out federal law.
+      <div className="branch-group">
+        <h4 className="branch-label">Judicial</h4>
+        <details className="national-details">
+          <summary>
+            The Supreme Court <span className="national-count">{supremeCourt.length}</span>
+          </summary>
+          <p className="national-note">
+            Nominated by a President, confirmed by the Senate, and seated for life. They have
+            the final say on what federal law and the Constitution mean.
+          </p>
+          <ul className="national-list">
+            {supremeCourt.map((j) => (
+              <li key={j.name}>
+                <span className="national-entry">
+                  <span className="national-name">{j.name}</span>
+                  <span className="national-role">
+                    {j.role}, seated {j.seated} under {j.nominatedBy}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+        <p className="branch-note">
+          The Supreme Court is the top of a much larger system. Roughly 870 other federal
+          judges hear the cases that never reach it, and they are appointed for life too.{' '}
+          <a href="/democracy#branches">How the courts fit in</a>
         </p>
-        <ul className="national-list">
-          {cabinet.map((m) => (
-            <li key={m.name}>
-              <span className="national-name">{m.name}</span>
-              <span className="national-role">{m.role}</span>
-            </li>
-          ))}
-        </ul>
-      </details>
+      </div>
 
-      <details className="national-details">
-        <summary>
-          The Supreme Court <span className="national-count">{supremeCourt.length}</span>
-        </summary>
-        <p className="national-note">
-          Nominated by a President, confirmed by the Senate, and seated for life. They have the
-          final say on what federal law and the Constitution mean.
-        </p>
-        <ul className="national-list">
-          {supremeCourt.map((j) => (
-            <li key={j.name}>
-              <span className="national-name">{j.name}</span>
-              <span className="national-role">
-                {j.role}, seated {j.seated} under {j.nominatedBy}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </details>
+      <div className="branch-group">
+        <h4 className="branch-label">Executive</h4>
+        <details className="national-details">
+          <summary>
+            The Cabinet{' '}
+            <span className="national-count">{departments.length + cabinetRank.length}</span>
+          </summary>
+          <p className="national-note">
+            Appointed by the President and confirmed by the Senate. The 15 executive
+            departments are listed in the order they would succeed to the presidency, which is
+            set by law and is why the list is ordered the way it is.
+          </p>
+          <PersonList people={departments} numbered />
+          <p className="national-note national-note-tight">
+            Cabinet rank, but outside the departments and outside the line of succession.
+          </p>
+          <PersonList people={cabinetRank} />
+        </details>
+      </div>
+
+      <div className="branch-group">
+        <h4 className="branch-label">Legislative</h4>
+        <details className="national-details">
+          <summary>
+            Congressional leadership <span className="national-count">{leadership.length}</span>
+          </summary>
+          <p className="national-note">
+            You elect these people to Congress, but their colleagues elect them to these roles.
+            They decide what reaches a vote at all, which is why they matter when you are
+            trying to be heard.{' '}
+            <a href="/democracy#congress">How Congress organizes itself</a>
+          </p>
+          <PersonList people={leadership} />
+        </details>
+      </div>
+
+      <p className="branch-crosslink">
+        <a href="/democracy#branches">Learn how the three branches fit together →</a>
+      </p>
     </div>
   );
 }
@@ -322,6 +369,7 @@ export default function Officials() {
         </p>
 
         <MajorSection id="federal" title="Federal" lede={federalLede}>
+          <SubTitle>Congress</SubTitle>
           {federal.senators.map((s) => (
             <RepCard key={s.bioguide} rep={s} />
           ))}
@@ -333,6 +381,19 @@ export default function Officials() {
               elect a delegate who serves on committees but cannot vote on final passage.
             </p>
           )}
+
+          {national && (
+            <>
+              <SubTitle>Executive</SubTitle>
+              <p className="sub-lede">
+                You do not get your own President the way you get your own representative, but
+                you do vote for this office, so it belongs here rather than below.
+              </p>
+              <RepCard rep={national.president} />
+              <RepCard rep={national.vicePresident} />
+            </>
+          )}
+
           <NationalBlock national={national} />
         </MajorSection>
 
@@ -404,7 +465,7 @@ export default function Officials() {
           <p className="election-note">{note}</p>
 
           <div className="action-block">
-            <h3>Register, or confirm you still are</h3>
+            <SubTitle>Check Your Registration</SubTitle>
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
               vote.gov is the federal government&apos;s official portal, and it hands you
@@ -416,7 +477,7 @@ export default function Officials() {
           </div>
 
           <div className="action-block">
-            <h3>Put these dates in your calendar</h3>
+            <SubTitle>Add Elections to Your Calendar</SubTitle>
             <p>
               Subscribe once and your own calendar app fills in every {stateFullName} election
               date, plus a reminder a week before Election Day. It updates itself if a date moves.

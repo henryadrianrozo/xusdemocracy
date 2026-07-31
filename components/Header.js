@@ -32,6 +32,12 @@ const icons = {
       <line x1="9" y1="14" x2="9" y2="18" />
       <line x1="15" y1="14" x2="15" y2="18" />
     </svg>
+  ),
+  flag: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <line x1="5" y1="21" x2="5" y2="3" strokeLinecap="round" />
+      <path d="M5 4h13l-3 4 3 4H5z" strokeLinejoin="round" />
+    </svg>
   )
 };
 
@@ -59,11 +65,16 @@ export default function Header() {
 
   // "My Officials" only appears once there's an address saved on this device.
   const nav = [
-    { href: '/?new=1', icon: icons.find, label: 'Who represents me?' },
+    { href: '/?new=1', icon: icons.find, label: 'Search' },
     hasSaved && { href: '/officials', icon: icons.person, label: 'My Officials' },
     { href: '/calendars', icon: icons.calendar, label: 'Election Calendars' },
-    { href: '/why', icon: icons.capitol, label: 'Why this matters' }
+    { href: '/democracy', icon: icons.capitol, label: 'Democracy' },
+    { href: '/why', icon: icons.flag, label: 'Who We Are' }
   ].filter(Boolean);
+
+  // Once an address is saved, My Officials is effectively the home page, so
+  // the wordmark goes straight there instead of bouncing through a redirect.
+  const homeHref = hasSaved ? '/officials' : '/';
 
   return (
     <>
@@ -78,7 +89,7 @@ export default function Header() {
             ☰
           </button>
         </div>
-        <Wordmark />
+        <Wordmark href={homeHref} />
         <div className="header-side header-side-end">
           <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle color theme">
             <span className="theme-dot" />

@@ -48,7 +48,8 @@ app/page.js              Home: address form (client component)
 app/officials/page.js    "My Officials": Federal / State / Elections
 app/calendars/page.js    Per-state .ics subscription links
 app/calendar/[state]/    The .ics feed itself
-app/why/page.js          Mission essay
+app/democracy/page.js    Civic education: branches, elections, evidence, history
+app/why/page.js          "Who We Are": mission and privacy
 app/layout.js            Header/footer, metadata, theme bootstrap
 app/globals.css          All styling (plain CSS, light default, dark opt-in)
 app/api/lookup/route.js  The one API route; orchestrates the lookup
@@ -63,7 +64,8 @@ lib/primaries.js         2026 primary dates (STATIC, expires Nov 2026)
 lib/elections.js         Next-election logic + vote.gov links
 lib/legislatures.js      Chamber names and seat counts, for the explainers
 lib/registration.js      Registration deadlines + deadline math
-lib/national.js          President, VP, Cabinet, Supreme Court (STATIC)
+lib/national.js          President, VP, Cabinet, congressional leadership,
+                         Supreme Court (STATIC)
 lib/states.js            FIPS/USPS mappings, vote.gov URL helper
 ```
 
@@ -84,6 +86,8 @@ Variables.
 - [vote.gov](https://vote.gov): official registration links (US EAC)
 - [whitehouse.gov](https://www.whitehouse.gov/administration/the-cabinet/): President, VP, Cabinet
 - [supremecourt.gov](https://www.supremecourt.gov/about/biographies.aspx): Supreme Court justices
+- [house.gov](https://www.house.gov/leadership): House leadership
+- [EAC](https://www.eac.gov) and [CISA](https://www.cisa.gov/topics/election-security): election administration facts
 
 Provenance, verification dates, and known weak spots are tracked in
 [`CLAUDE.md`](./CLAUDE.md).
@@ -98,7 +102,9 @@ Provenance, verification dates, and known weak spots are tracked in
   covers most of that gap when configured.
 - Nebraska is unicameral, so it has no state house district (correct behavior).
 - DC and the territories have no governor card.
-- Cabinet and Supreme Court rosters are hand-maintained snapshots.
+- Cabinet, congressional leadership, and Supreme Court rosters are
+  hand-maintained snapshots. Senate leadership names are secondary-sourced
+  because senate.gov blocks automated requests.
 
 ## Privacy commitment
 

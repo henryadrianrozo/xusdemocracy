@@ -52,6 +52,7 @@ own `localStorage` and never leaves the browser.
 | **Governors** | `lib/governors.js` | [NGA roster](https://www.nga.org/governors/) | **STATIC, hand-maintained** | **After every gubernatorial election and any mid-term succession.** Most volatile thing here. |
 | Governor photos | `lib/governors.js` | NGA headshots, hotlinked | Static URLs | If NGA moves a file. `RepCard` falls back to a monogram on image error, so it degrades quietly. |
 | **President, Cabinet, SCOTUS** | `lib/national.js` | [whitehouse.gov](https://www.whitehouse.gov/administration/the-cabinet/), [supremecourt.gov](https://www.supremecourt.gov/about/biographies.aspx) | **STATIC, hand-maintained** | Cabinet churns a few times per term. President and VP change Jan 2029. Court changes on death or retirement. |
+| **Congressional leadership** | `lib/national.js` | [house.gov](https://www.house.gov/leadership) for the House. **Senate names are secondary-sourced.** | **STATIC, hand-maintained** | **Re-elected every Congress, so January 2027.** |
 | **Primary dates** | `lib/primaries.js` | NCSL 2026 table | **STATIC, 2026 only** | **Hard-expires after Nov 2026.** No 2027/2028 data exists yet. |
 | **General election** | `lib/elections.js` | Statute | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026.** `GENERAL_2026` is a single hardcoded object. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
@@ -92,6 +93,16 @@ Verification status as of **30 July 2026**:
   wrong from memory: the department is currently **Secretary of War**, the
   Attorney General is listed as **Acting**, and Markwayne Mullin is at DHS.
   Record titles exactly as published; do not normalize them.
+- **Congressional leadership: House verified, Senate not.** house.gov serves
+  plain HTML, so the Speaker, leaders, and whips came from the primary source.
+  **senate.gov and congress.gov both return 403**, so Grassley, Thune, and
+  Schumer came from secondary sources and should be confirmed by hand.
+- **`/democracy` claims are individually sourced.** Paper records and audits
+  from the EAC, critical-infrastructure designation from CISA, health outcomes
+  from The Lancet, growth from the Journal of Political Economy. Every one is
+  linked in the page body. Journal links point at the free NIH and NBER copies,
+  because the publishers paywall and bot-block. **If you add a claim to that
+  page, source it the same way or leave it out.**
 
 Every screen that shows a date also tells the user to confirm with their state
 election office, and links them there. Keep that. It is the honest hedge for
@@ -106,6 +117,9 @@ This is the single most important thing to know about the project. On
    empties out and the officials page loses its Elections section content.
 2. `lib/primaries.js`: every 2026 date is in the past, so `.ics` feeds go empty.
 3. `lib/governors.js`: 36 governorships are decided, so names and parties change.
+4. `lib/national.js`: congressional leadership is re-elected when the new
+   Congress seats in January 2027, so the Speaker and both parties' leaders
+   may all change.
 
 Fixing this properly means replacing the hardcoded 2026 objects with a
 multi-cycle structure. See "Next moves" below.
@@ -120,7 +134,8 @@ multi-cycle structure. See "Next moves" below.
 | `/officials` | The main result page: Federal / State / Elections. Was `/results` (301 redirect kept). |
 | `/calendars` | Every state's `.ics` subscription link. |
 | `/calendar/[state]` | The `.ics` feed itself. `webcal://` for Apple/Outlook, Google's add-by-URL for Google. |
-| `/why` | Mission essay. |
+| `/democracy` | Civic education: the system, the three branches, how elections are run, the evidence, suffrage history. Anchors `#branches` and `#congress` are cross-linked from `/officials`. |
+| `/why` | "Who We Are": the project's mission and privacy commitments. |
 | `/api/lookup` | The one API route. POST `{address}` or `{lat,lon}`. |
 
 ## Client-side state (all `localStorage`, all optional)

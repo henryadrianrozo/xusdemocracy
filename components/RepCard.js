@@ -177,6 +177,10 @@ export default function RepCard({ rep }) {
           </ul>
         )}
 
+        {/* Used for things a fact chip cannot carry, like the 22nd Amendment
+            limit on the presidency. */}
+        {rep.note && <p className="rep-note">{rep.note}</p>}
+
         <div className="rep-actions">
           {rep.phone && (
             <a href={`tel:${rep.phone}`}>{ICONS.phone} Call</a>
