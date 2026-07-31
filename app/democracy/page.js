@@ -1,7 +1,44 @@
+import { SITE_URL } from '@/lib/site';
+
+const DESCRIPTION =
+  'How the American system works, how elections are actually run and secured, how Congress organizes itself, and what the evidence says about why any of it matters.';
+
+// Title is bare: the root layout applies the "%s | XUsDemocracy" template.
 export const metadata = {
-  title: 'Democracy | XUsDemocracy',
-  description:
-    'How the American system works, how elections are actually run, and what the evidence says about why any of it matters.'
+  title: 'How Our Democracy Works',
+  description: DESCRIPTION,
+  alternates: { canonical: '/democracy' },
+  openGraph: { title: 'How Our Democracy Works', description: DESCRIPTION, url: '/democracy' }
+};
+
+// The sourcing below is this page's whole claim to authority, so it is exposed
+// as structured data rather than left implicit in the prose. Every URL here
+// also appears as a link in the body.
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'How our democracy works',
+  description: DESCRIPTION,
+  url: `${SITE_URL}/democracy`,
+  inLanguage: 'en-US',
+  isAccessibleForFree: true,
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  publisher: { '@id': `${SITE_URL}/#organization` },
+  author: { '@id': `${SITE_URL}/#organization` },
+  about: [
+    'United States government',
+    'Separation of powers',
+    'Election administration',
+    'Election security',
+    'Voting rights'
+  ],
+  citation: [
+    'https://www.cisa.gov/topics/election-security',
+    'https://www.eac.gov/sites/default/files/2025-07/2024_EAVS_Report_508.pdf',
+    'https://www.eac.gov/election-officials/election-audits-across-united-states',
+    'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6484695/',
+    'https://www.nber.org/papers/w20004'
+  ]
 };
 
 // Every factual claim on this page traces to a source linked in the text.
@@ -21,6 +58,10 @@ export const metadata = {
 export default function Democracy() {
   return (
     <article className="prose">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <h1>How our democracy works</h1>
       <p>
         A short, plain explanation of the system you live under: who holds power, how elections

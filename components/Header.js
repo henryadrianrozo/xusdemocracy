@@ -63,14 +63,16 @@ export default function Header() {
     } catch {}
   }
 
-  // "My Officials" only appears once there's an address saved on this device.
+  // "My Officials" is always listed, so a first-time visitor can see the
+  // feature exists. With nothing saved it points at the search form, which is
+  // where /officials would redirect anyway, minus a flash of the loading state.
   const nav = [
     { href: '/?new=1', icon: icons.find, label: 'Search' },
-    hasSaved && { href: '/officials', icon: icons.person, label: 'My Officials' },
+    { href: hasSaved ? '/officials' : '/?new=1', icon: icons.person, label: 'My Officials' },
     { href: '/calendars', icon: icons.calendar, label: 'Election Calendars' },
     { href: '/democracy', icon: icons.capitol, label: 'Democracy' },
     { href: '/why', icon: icons.flag, label: 'Who We Are' }
-  ].filter(Boolean);
+  ];
 
   // Once an address is saved, My Officials is effectively the home page, so
   // the wordmark goes straight there instead of bouncing through a redirect.
@@ -107,8 +109,10 @@ export default function Header() {
           </button>
         </div>
         <nav className="drawer-nav">
+          {/* Keyed on label, not href: with no saved address, Search and My
+              Officials both point at the form and would collide on href. */}
           {nav.map((item) => (
-            <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
+            <a key={item.label} href={item.href} onClick={() => setOpen(false)}>
               <span className="drawer-icon">{item.icon}</span> {item.label}
             </a>
           ))}

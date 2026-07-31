@@ -1,7 +1,12 @@
 import { ImageResponse } from 'next/og';
 
 // Social share preview card (iMessage, Slack, X, Facebook, etc.)
-export const runtime = 'edge';
+//
+// Deliberately NOT `runtime = 'edge'`. Edge opts the route out of static
+// generation, so the image was being rendered on every request. Social
+// crawlers are impatient and some give up rather than wait, which means a
+// link preview that intermittently does not appear. Without it, this is
+// prerendered once at build time and served as a static file.
 export const alt = 'XUsDemocracy: Know who represents you';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -52,16 +57,17 @@ export default function OgImage() {
         >
           Your officials and upcoming elections in seconds. Free and nonpartisan.
         </div>
+        {/* Matches the line the home page uses, so the site and every link
+            preview of it finally say the same thing. */}
         <div
           style={{
             marginTop: 40,
-            fontSize: 22,
-            letterSpacing: '0.14em',
-            color: '#5b8fe0',
-            textTransform: 'uppercase'
+            fontSize: 24,
+            fontWeight: 600,
+            color: '#5b8fe0'
           }}
         >
-          Connect · Inform · Empower
+          Keep your representatives accountable.
         </div>
       </div>
     ),

@@ -50,9 +50,18 @@ app/calendars/page.js    Per-state .ics subscription links
 app/calendar/[state]/    The .ics feed itself
 app/democracy/page.js    Civic education: branches, elections, evidence, history
 app/why/page.js          "Who We Are": mission and privacy
-app/layout.js            Header/footer, metadata, theme bootstrap
+app/states/page.js       Index of all 52 state pages
+app/states/[slug]/       One static page per state: deadline, elections,
+                         senators, governor, legislature, FAQ
+app/layout.js            Header/footer, metadata, theme bootstrap, site JSON-LD
 app/globals.css          All styling (plain CSS, light default, dark opt-in)
 app/api/lookup/route.js  The one API route; orchestrates the lookup
+app/robots.js            /robots.txt
+app/sitemap.js           /sitemap.xml (5 core pages + 52 states)
+app/llms.txt/route.js    /llms.txt, a site map for AI assistants
+app/manifest.js          /manifest.webmanifest
+app/icon.svg             Favicon; app/apple-icon.js is the iOS touch icon
+app/opengraph-image.js   Social share card (do NOT set runtime = 'edge')
 components/Header.js     Centered wordmark, drawer nav, theme toggle
 components/RepCard.js    Official card + enlargeable portrait + .vcf export
 lib/site.js              Canonical domain, the ONLY place a hostname appears
@@ -66,7 +75,7 @@ lib/legislatures.js      Chamber names and seat counts, for the explainers
 lib/registration.js      Registration deadlines + deadline math
 lib/national.js          President, VP, Cabinet, congressional leadership,
                          Supreme Court (STATIC)
-lib/states.js            FIPS/USPS mappings, vote.gov URL helper
+lib/states.js            FIPS/USPS mappings, state slugs, vote.gov URL helper
 ```
 
 ## Deploy
