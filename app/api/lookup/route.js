@@ -86,9 +86,11 @@ export async function POST(request) {
       },
       stateLegislators: stateLegs, // null when Geocodio key not configured
       ...elections,
-      registrationDeadline: elections.elections[0]
-        ? getRegistrationDeadline(geo.state, geo.stateFullName, elections.elections[0].date)
-        : null
+      registrationDeadline: getRegistrationDeadline(
+        geo.state,
+        geo.stateFullName,
+        elections.elections
+      )
     });
   } catch (err) {
     console.error('lookup failed:', err.message); // message only, never the address
