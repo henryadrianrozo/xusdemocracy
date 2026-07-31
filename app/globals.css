@@ -373,11 +373,10 @@ a { color: var(--blue); }
 }
 .major-title:hover { color: var(--blue); }
 
-/* One triangle shared by both collapsible levels: the Federal, State, and
-   Elections sections, and the Supreme Court, Cabinet, and Congressional
-   leadership dropdowns inside Federal. Points right when closed and down when
-   open. The rotation rule is keyed off details[open] rather than a per-level
-   class, so any new collapsible picks it up by using .caret and nothing else. */
+/* The triangle on Federal, State, and Elections. Points right when closed and
+   down when open. Those three are the only places it belongs: the dropdowns
+   inside the national block carry a count pill, which signals "there is more
+   here" well enough on its own, and an arrow next to it was just noise. */
 .caret {
   width: 0;
   height: 0;
@@ -387,11 +386,6 @@ a { color: var(--blue); }
   border-left: 10px solid var(--muted);
   transition: transform 0.15s ease;
   transform-origin: 30% 50%;
-}
-.caret-sm {
-  border-top-width: 5px;
-  border-bottom-width: 5px;
-  border-left-width: 7px;
 }
 details[open] > summary .caret { transform: rotate(90deg); }
 

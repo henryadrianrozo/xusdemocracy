@@ -108,7 +108,6 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Judicial</h4>
         <details className="national-details">
           <summary>
-            <span className="caret caret-sm" aria-hidden="true" />
             The Supreme Court <span className="national-count">{supremeCourt.length}</span>
           </summary>
           <p className="national-note">
@@ -139,7 +138,6 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Executive</h4>
         <details className="national-details">
           <summary>
-            <span className="caret caret-sm" aria-hidden="true" />
             The Cabinet{' '}
             <span className="national-count">{departments.length + cabinetRank.length}</span>
           </summary>
@@ -160,7 +158,6 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Legislative</h4>
         <details className="national-details">
           <summary>
-            <span className="caret caret-sm" aria-hidden="true" />
             Congressional leadership <span className="national-count">{leadership.length}</span>
           </summary>
           <p className="national-note">
