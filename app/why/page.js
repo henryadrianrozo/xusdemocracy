@@ -1,12 +1,43 @@
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
+
+// Title is bare: the root layout applies the "%s | XUsDemocracy" template.
 export const metadata = {
-  title: 'Who We Are | XUsDemocracy',
+  title: 'Who We Are',
   description:
-    'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.'
+    'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.',
+  alternates: { canonical: '/why' },
+  openGraph: {
+    title: 'Who We Are',
+    description:
+      'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.',
+    url: '/why'
+  }
+};
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'Who We Are',
+  url: `${SITE_URL}/why`,
+  description:
+    'The mission and privacy commitments behind XUsDemocracy, a free nonpartisan tool for finding your elected officials.',
+  isPartOf: { '@id': `${SITE_URL}/#website` },
+  about: { '@id': `${SITE_URL}/#organization` },
+  publisher: { '@id': `${SITE_URL}/#organization` },
+  mainEntity: {
+    '@type': 'Organization',
+    '@id': `${SITE_URL}/#organization`,
+    email: CONTACT_EMAIL
+  }
 };
 
 export default function WhoWeAre() {
   return (
     <article className="prose">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <h1>Who we are</h1>
       <p>
         Most Americans can name the President. Far fewer can name their House member. Almost

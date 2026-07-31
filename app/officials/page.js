@@ -26,7 +26,7 @@ function MajorSection({ id, title, lede, children }) {
   return (
     <details className="major" id={id} open>
       <summary className="major-title">
-        <span className="major-caret" aria-hidden="true" />
+        <span className="caret" aria-hidden="true" />
         {title}
       </summary>
       <div className="major-body">
@@ -37,6 +37,23 @@ function MajorSection({ id, title, lede, children }) {
   );
 }
 
+// One level down, and collapsible for the same reason: Federal carries a lot,
+// and a reader who wants the Cabinet should not have to scroll past Congress.
+function SubSection({ title, lede, children }) {
+  return (
+    <details className="sub" open>
+      <summary className="sub-title">
+        <span className="caret caret-sm" aria-hidden="true" />
+        {title}
+      </summary>
+      {lede && <p className="sub-lede">{lede}</p>}
+      {children}
+    </details>
+  );
+}
+
+// The Elections action blocks use this instead of SubSection. Each one ends in
+// a button, so collapsing them would hide the point of the section.
 function SubTitle({ children }) {
   return <h3 className="sub-title">{children}</h3>;
 }
@@ -102,6 +119,7 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Judicial</h4>
         <details className="national-details">
           <summary>
+            <span className="caret caret-sm" aria-hidden="true" />
             The Supreme Court <span className="national-count">{supremeCourt.length}</span>
           </summary>
           <p className="national-note">
@@ -132,6 +150,7 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Executive</h4>
         <details className="national-details">
           <summary>
+            <span className="caret caret-sm" aria-hidden="true" />
             The Cabinet{' '}
             <span className="national-count">{departments.length + cabinetRank.length}</span>
           </summary>
@@ -152,6 +171,7 @@ function NationalBlock({ national }) {
         <h4 className="branch-label">Legislative</h4>
         <details className="national-details">
           <summary>
+            <span className="caret caret-sm" aria-hidden="true" />
             Congressional leadership <span className="national-count">{leadership.length}</span>
           </summary>
           <p className="national-note">
@@ -369,29 +389,28 @@ export default function Officials() {
         </p>
 
         <MajorSection id="federal" title="Federal" lede={federalLede}>
-          <SubTitle>Congress</SubTitle>
-          {federal.senators.map((s) => (
-            <RepCard key={s.bioguide} rep={s} />
-          ))}
-          {federal.houseRep ? (
-            <RepCard rep={federal.houseRep} />
-          ) : (
-            <p className="empty-note">
-              No voting House member for this district. Washington, DC and the U.S. territories
-              elect a delegate who serves on committees but cannot vote on final passage.
-            </p>
-          )}
+          <SubSection title="Congress">
+            {federal.senators.map((s) => (
+              <RepCard key={s.bioguide} rep={s} />
+            ))}
+            {federal.houseRep ? (
+              <RepCard rep={federal.houseRep} />
+            ) : (
+              <p className="empty-note">
+                No voting House member for this district. Washington, DC and the U.S. territories
+                elect a delegate who serves on committees but cannot vote on final passage.
+              </p>
+            )}
+          </SubSection>
 
           {national && (
-            <>
-              <SubTitle>Executive</SubTitle>
-              <p className="sub-lede">
-                You do not get your own President the way you get your own representative, but
-                you do vote for this office, so it belongs here rather than below.
-              </p>
+            <SubSection
+              title="Executive"
+              lede="You do not get your own President the way you get your own representative, but you do vote for this office, so it belongs here rather than below."
+            >
               <RepCard rep={national.president} />
               <RepCard rep={national.vicePresident} />
-            </>
+            </SubSection>
           )}
 
           <NationalBlock national={national} />
@@ -465,7 +484,7 @@ export default function Officials() {
           <p className="election-note">{note}</p>
 
           <div className="action-block">
-            <SubTitle>Check Your Registration</SubTitle>
+            <SubTitle>Register to Vote</SubTitle>
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
               vote.gov is the federal government&apos;s official portal, and it hands you
@@ -477,7 +496,7 @@ export default function Officials() {
           </div>
 
           <div className="action-block">
-            <SubTitle>Add Elections to Your Calendar</SubTitle>
+            <SubTitle>Election Calendars</SubTitle>
             <p>
               Subscribe once and your own calendar app fills in every {stateFullName} election
               date, plus a reminder a week before Election Day. It updates itself if a date moves.

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="XUsDemocracy">
+  <!-- Favicon. The wordmark's X, which is the one glyph that reads at 16px.
+       Dark ground in both themes so it stays legible against a light browser
+       tab and a dark one alike. Colors are the dark-theme --bg and --red from
+       app/globals.css; keep them in sync if the palette moves. -->
+  <rect width="64" height="64" rx="14" fill="#0a0c10"/>
+  <path d="M17 16 L32 32 L47 16 M17 48 L32 32 L47 48"
+        stroke="#e2574f" stroke-width="9"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

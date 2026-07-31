@@ -121,6 +121,14 @@ This is the single most important thing to know about the project. On
    Congress seats in January 2027, so the Speaker and both parties' leaders
    may all change.
 
+**The blast radius got bigger on 31 July 2026.** This used to degrade one
+dynamic view that a person had to type an address to reach. It now also
+degrades **52 statically generated, publicly indexed pages**, whose titles
+promise registration deadlines and election dates. After 4 November 2026 every
+one of them will show an empty election list and no deadline, and Google will
+still be serving them. Fixing the multi-cycle restructure is no longer just a
+data chore, it is a credibility problem with a public deadline.
+
 Fixing this properly means replacing the hardcoded 2026 objects with a
 multi-cycle structure. See "Next moves" below.
 
@@ -136,7 +144,57 @@ multi-cycle structure. See "Next moves" below.
 | `/calendar/[state]` | The `.ics` feed itself. `webcal://` for Apple/Outlook, Google's add-by-URL for Google. |
 | `/democracy` | Civic education: the system, the three branches, how elections are run, the evidence, suffrage history. Anchors `#branches` and `#congress` are cross-linked from `/officials`. |
 | `/why` | "Who We Are": the project's mission and privacy commitments. |
+| `/states` | Index of all 52 state pages. Linked from the footer, which is the crawl path. |
+| `/states/[slug]` | **52 statically generated pages**, slug = full state name (`/states/new-hampshire`). Registration deadline, upcoming elections, both US senators, governor, legislature, calendar links, FAQ. `revalidate = 3600`. |
 | `/api/lookup` | The one API route. POST `{address}` or `{lat,lon}`. |
+
+## SEO and crawler surface
+
+Added 31 July 2026. The site had no robots.txt, no sitemap, no canonicals, no
+favicon, and no structured data before this.
+
+| Route | File | Notes |
+|---|---|---|
+| `/robots.txt` | `app/robots.js` | Allows all. Disallows `/api/`, `/calendar/`, `/officials`. Names AI agents explicitly. |
+| `/sitemap.xml` | `app/sitemap.js` | 57 URLs: 5 core + 52 states. Submit this to Search Console and Bing. |
+| `/llms.txt` | `app/llms.txt/route.js` | Site map for language models, llmstxt.org convention. |
+| `/manifest.webmanifest` | `app/manifest.js` | |
+| `/icon.svg`, `/apple-icon` | `app/icon.svg`, `app/apple-icon.js` | |
+| `/opengraph-image` | `app/opengraph-image.js` | |
+
+**Things that will bite you if you forget them:**
+
+- **The root layout sets `alternates.canonical: '/'`, and that is inherited.**
+  Any page that does not set its own canonical will declare the home page as
+  its canonical, which tells Google to index the home page instead of it. Every
+  new page must set `alternates: { canonical: '/its-own-path' }`. `/officials`
+  needed this even though it is noindex, because a noindex page pointing its
+  canonical elsewhere is a contradictory instruction.
+- **The root layout sets a title template (`%s | XUsDemocracy`).** Page titles
+  must be bare. Writing `title: 'Thing | XUsDemocracy'` renders as
+  `Thing | XUsDemocracy | XUsDemocracy`.
+- **`/officials` and `/calendars` are client components and cannot export
+  metadata.** Each has a sibling `layout.js` that carries it. Do not "fix" this
+  by splitting the pages.
+- **Do not add `runtime = 'edge'` to `opengraph-image.js`.** Edge opts the route
+  out of static generation, so the image gets rendered per request and slow
+  social crawlers sometimes give up, producing link previews that intermittently
+  fail to appear.
+- **Do not add an `.action-block h3` rule to `globals.css`.** It outranks
+  `.sub-title` on specificity and silently shrinks the Elections headings. That
+  exact bug shipped once.
+- Verification tokens come from `GOOGLE_SITE_VERIFICATION` and
+  `BING_SITE_VERIFICATION` env vars and are omitted entirely when unset. No
+  placeholder is ever committed.
+
+**The state pages raise the stakes on registration data.** `lib/registration.js`
+is spot-verified for Florida and California only; the other 48 are
+single-sourced from the CEIR survey. That number is now the headline of 52
+indexable pages and the first answer in their FAQ structured data, so an error
+propagates into search results and AI answers rather than being seen by one
+person. Each page links its state election office directly under the deadline
+and again in the footer note. **Re-verifying all 50 deadlines is the highest
+value data task on the list.**
 
 ## Client-side state (all `localStorage`, all optional)
 
@@ -161,10 +219,31 @@ multi-cycle structure. See "Next moves" below.
   messages. They read as AI-generated and undermine the site's credibility.
   Rewrite the sentence with a comma, colon, or period instead of swapping in a
   hyphen. Check before committing:
-  `grep -rn '—\|–' --include="*.js" --include="*.md" . | grep -v node_modules`
 
-  The only legitimate hit is that grep line itself, which has to contain the
+  ```bash
+  find app components lib . -maxdepth 4 \
+    \( -name '*.js' -o -name '*.md' -o -name '*.css' -o -name '*.mjs' -o -name '*.svg' \) \
+    -not -path '*/node_modules/*' -not -path '*/.next/*' -not -path '*/.git/*' -print0 \
+    | xargs -0 grep -n '[—–]' | sort -u
+  ```
+
+  The only legitimate hit is the line just above, which has to contain the
   characters in order to match them. Anything else is a regression.
+
+  ⚠️ **This command used to be `grep -rn ... --include="*.js" ...` and it was
+  silently broken.** `grep` on this machine is **ugrep 7.5.0**, not GNU or BSD
+  grep, and under ugrep that invocation matches nothing at all, even on a file
+  that provably contains the characters. It never failed loudly; it just always
+  returned clean, so the project's most important style rule had a guardrail
+  that could not fire. Verify any replacement actually catches a known dash
+  before trusting it:
+
+  ```bash
+  printf 'em—dash\n' | grep -n '[—–]'    # must print a match
+  ```
+
+  `git grep -n '[—–]'` also works, but only searches tracked files, so it
+  misses newly added ones. Prefer the `find` form above.
 - Comments explain *why*, especially for anything data-source or
   privacy-related. Future maintainers need the provenance more than the syntax.
 
@@ -174,6 +253,8 @@ multi-cycle structure. See "Next moves" below.
 |---|---|---|
 | `GEOCODIO_API_KEY` | Optional but important | Without it, no state legislator names and no fuzzy-address fallback. Free tier: 2,500/day at [dash.geocod.io](https://dash.geocod.io). |
 | `NEXT_PUBLIC_SITE_HOST` | Optional | Overrides the canonical host. Defaults to `democracy.xusall.com`. |
+| `GOOGLE_SITE_VERIFICATION` | Optional | Emits the Search Console meta tag. Omitted entirely when unset. |
+| `BING_SITE_VERIFICATION` | Optional | Emits the `msvalidate.01` meta tag for Bing Webmaster Tools. |
 
 ## Local development
 
@@ -219,10 +300,22 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
    Needs accounts, which breaks the current no-database promise. Design that
    trade-off deliberately when the time comes.
 
+**Search, once the site is submitted:**
+7. Verify the domain in Google Search Console and Bing Webmaster Tools, set
+   `GOOGLE_SITE_VERIFICATION` and `BING_SITE_VERIFICATION` in Vercel, redeploy,
+   then submit `https://democracy.xusall.com/sitemap.xml` to both. Bing can
+   import the property straight from Search Console once Google is verified.
+8. Re-verify all 50 registration deadlines. See the warning in the SEO section:
+   this data is now public and indexed.
+9. Per-city pages would be the natural follow-on to the state pages, but they
+   depend on the local officials data problem below being solved first.
+
 **Reliability:**
-7. No rate limiting on `/api/lookup`. A bored script can burn the 2,500/day
-   Geocodio tier in minutes and silently degrade the site to federal-only.
-8. Governor cards have no photos and there is no photo source for them, so they
-   always render a monogram. State legislators without an OpenStates photo do
-   the same. The monogram is deliberate, because showing the wrong face on a
-   civic site is worse than showing initials.
+10. No rate limiting on `/api/lookup`. A bored script can burn the 2,500/day
+    Geocodio tier in minutes and silently degrade the site to federal-only.
+11. Some officials still render a monogram instead of a photo: state
+    legislators with no OpenStates image, and the Vice President, whose
+    official portrait could not be identified on whitehouse.gov. The monogram
+    is deliberate, because showing the wrong face on a civic site is worse than
+    showing initials. (Governors were fixed in July 2026; all 51 now carry NGA
+    headshots.)

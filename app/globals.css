@@ -372,8 +372,13 @@ a { color: var(--blue); }
   border-radius: 2px;
 }
 .major-title:hover { color: var(--blue); }
-/* Triangle that points right when closed and down when open. */
-.major-caret {
+
+/* One triangle shared by every collapsible level: the major sections, the
+   Congress and Executive sub-sections, and the national dropdowns. Points
+   right when closed and down when open. The rotation rule is keyed off
+   details[open] rather than a per-level class, so any new collapsible picks
+   it up by using .caret and nothing else. */
+.caret {
   width: 0;
   height: 0;
   flex-shrink: 0;
@@ -383,11 +388,19 @@ a { color: var(--blue); }
   transition: transform 0.15s ease;
   transform-origin: 30% 50%;
 }
-.major[open] > .major-title .major-caret { transform: rotate(90deg); }
+.caret-sm {
+  border-top-width: 5px;
+  border-bottom-width: 5px;
+  border-left-width: 7px;
+}
+details[open] > summary .caret { transform: rotate(90deg); }
 
-/* One step down from a major title. Used for Congress, Executive, and the
-   Elections action blocks. */
+/* One step down from a major title. Used for Congress and Executive, which
+   collapse, and the Elections action blocks, which do not. */
 .sub-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1.22rem;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -395,8 +408,13 @@ a { color: var(--blue); }
   margin: 26px 0 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
+  list-style: none;
 }
-.major-body > .sub-title:first-child { margin-top: 0; }
+.sub-title::-webkit-details-marker { display: none; }
+summary.sub-title { cursor: pointer; }
+summary.sub-title:hover { color: var(--blue); }
+.major-body > .sub-title:first-child,
+.major-body > .sub:first-child > .sub-title { margin-top: 0; }
 .sub-lede {
   color: var(--muted);
   font-size: 0.9rem;
@@ -761,13 +779,18 @@ a { color: var(--blue); }
   padding: 18px 20px;
   margin-bottom: 24px;
 }
+/* h3 on the officials page, h2 on a state page, where it is the first heading
+   under the h1 and needs to keep the outline honest for crawlers. */
+.deadline-box h2,
 .deadline-box h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .deadline-box p { color: var(--muted); font-size: 0.92rem; margin: 0; }
 .deadline-pointer { margin-top: 8px !important; font-size: 0.85rem !important; opacity: 0.85; }
 
-/* One action per block, each with a line explaining what it does. */
+/* One action per block, each with a line explaining what it does. The heading
+   is a .sub-title, so it deliberately carries no size or weight of its own
+   here. An `.action-block h3` rule outranks `.sub-title` on specificity and
+   would silently shrink these two headings back down. Do not add one. */
 .action-block { margin-bottom: 28px; }
-.action-block h3 { font-size: 1.02rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .action-block p {
   color: var(--muted);
   font-size: 0.92rem;
@@ -835,6 +858,29 @@ a { color: var(--blue); }
 .calendar-actions a:hover { text-decoration: underline; }
 .calendar-actions a { text-decoration: none; }
 
+/* The /states index reuses .calendar-grid, but each cell is a single link
+   rather than a name plus a row of actions. */
+.state-link {
+  display: block;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.state-link:hover { color: var(--blue); text-decoration: underline; }
+
+/* Back link above the h1 on a state page. */
+.crumb { font-size: 0.85rem; margin-bottom: 10px; }
+.crumb a { color: var(--muted); text-decoration: none; }
+.crumb a:hover { color: var(--blue); text-decoration: underline; }
+
+/* Question and answer pairs on a state page. The same strings feed the
+   FAQPage JSON-LD, so a reader and a crawler get identical answers. */
+.faq-item { padding: 14px 0; border-top: 1px solid var(--border); }
+.faq-item:first-child { border-top: none; padding-top: 0; }
+.faq-item h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.faq-item p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; margin: 0; }
+
 /* Why page */
 .prose { max-width: 680px; margin: 0 auto; padding: 2.5rem 24px 4rem; }
 .prose h1 { color: var(--text); margin-bottom: 1rem; letter-spacing: -0.025em; font-weight: 800; }
@@ -853,6 +899,17 @@ a { color: var(--blue); }
 }
 .site-footer strong { color: var(--text); }
 .site-footer a { color: var(--blue); }
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.footer-nav a { text-decoration: none; }
+.footer-nav a:hover { text-decoration: underline; }
 .footer-fine { font-size: 0.78rem; margin-top: 0.4rem; opacity: 0.75; }
 
 @media (max-width: 540px) {
