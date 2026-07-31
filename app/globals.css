@@ -373,11 +373,11 @@ a { color: var(--blue); }
 }
 .major-title:hover { color: var(--blue); }
 
-/* One triangle shared by every collapsible level: the major sections, the
-   Congress and Executive sub-sections, and the national dropdowns. Points
-   right when closed and down when open. The rotation rule is keyed off
-   details[open] rather than a per-level class, so any new collapsible picks
-   it up by using .caret and nothing else. */
+/* One triangle shared by both collapsible levels: the Federal, State, and
+   Elections sections, and the Supreme Court, Cabinet, and Congressional
+   leadership dropdowns inside Federal. Points right when closed and down when
+   open. The rotation rule is keyed off details[open] rather than a per-level
+   class, so any new collapsible picks it up by using .caret and nothing else. */
 .caret {
   width: 0;
   height: 0;
@@ -395,12 +395,10 @@ a { color: var(--blue); }
 }
 details[open] > summary .caret { transform: rotate(90deg); }
 
-/* One step down from a major title. Used for Congress and Executive, which
-   collapse, and the Elections action blocks, which do not. */
+/* One step down from a major title: Congress, Executive, and the Elections
+   action blocks. A plain heading, never a summary. These do not collapse; see
+   the note on SubTitle in app/officials/page.js. */
 .sub-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-size: 1.22rem;
   font-weight: 700;
   letter-spacing: -0.015em;
@@ -408,13 +406,8 @@ details[open] > summary .caret { transform: rotate(90deg); }
   margin: 26px 0 10px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
-  list-style: none;
 }
-.sub-title::-webkit-details-marker { display: none; }
-summary.sub-title { cursor: pointer; }
-summary.sub-title:hover { color: var(--blue); }
-.major-body > .sub-title:first-child,
-.major-body > .sub:first-child > .sub-title { margin-top: 0; }
+.major-body > .sub-title:first-child { margin-top: 0; }
 .sub-lede {
   color: var(--muted);
   font-size: 0.9rem;

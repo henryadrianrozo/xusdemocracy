@@ -37,23 +37,12 @@ function MajorSection({ id, title, lede, children }) {
   );
 }
 
-// One level down, and collapsible for the same reason: Federal carries a lot,
-// and a reader who wants the Cabinet should not have to scroll past Congress.
-function SubSection({ title, lede, children }) {
-  return (
-    <details className="sub" open>
-      <summary className="sub-title">
-        <span className="caret caret-sm" aria-hidden="true" />
-        {title}
-      </summary>
-      {lede && <p className="sub-lede">{lede}</p>}
-      {children}
-    </details>
-  );
-}
-
-// The Elections action blocks use this instead of SubSection. Each one ends in
-// a button, so collapsing them would hide the point of the section.
+// One step down from a major title, and deliberately NOT collapsible.
+// Congress and Executive were briefly made into dropdowns and it read as
+// clutter: nesting a collapsible inside a collapsible inside a page that
+// already has the Cabinet and Court dropdowns below gave the section three
+// levels of disclosure and no clear hierarchy. Only Federal, State, and
+// Elections collapse.
 function SubTitle({ children }) {
   return <h3 className="sub-title">{children}</h3>;
 }
@@ -389,28 +378,29 @@ export default function Officials() {
         </p>
 
         <MajorSection id="federal" title="Federal" lede={federalLede}>
-          <SubSection title="Congress">
-            {federal.senators.map((s) => (
-              <RepCard key={s.bioguide} rep={s} />
-            ))}
-            {federal.houseRep ? (
-              <RepCard rep={federal.houseRep} />
-            ) : (
-              <p className="empty-note">
-                No voting House member for this district. Washington, DC and the U.S. territories
-                elect a delegate who serves on committees but cannot vote on final passage.
-              </p>
-            )}
-          </SubSection>
+          <SubTitle>Congress</SubTitle>
+          {federal.senators.map((s) => (
+            <RepCard key={s.bioguide} rep={s} />
+          ))}
+          {federal.houseRep ? (
+            <RepCard rep={federal.houseRep} />
+          ) : (
+            <p className="empty-note">
+              No voting House member for this district. Washington, DC and the U.S. territories
+              elect a delegate who serves on committees but cannot vote on final passage.
+            </p>
+          )}
 
           {national && (
-            <SubSection
-              title="Executive"
-              lede="You do not get your own President the way you get your own representative, but you do vote for this office, so it belongs here rather than below."
-            >
+            <>
+              <SubTitle>Executive</SubTitle>
+              <p className="sub-lede">
+                You do not get your own President the way you get your own representative, but
+                you do vote for this office, so it belongs here rather than below.
+              </p>
               <RepCard rep={national.president} />
               <RepCard rep={national.vicePresident} />
-            </SubSection>
+            </>
           )}
 
           <NationalBlock national={national} />
