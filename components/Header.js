@@ -10,6 +10,12 @@ const icons = {
       <line x1="16" y1="16" x2="21" y2="21" strokeLinecap="round" />
     </svg>
   ),
+  person: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <circle cx="12" cy="8" r="3.4" />
+      <path d="M5 20c0-4 3.1-6.5 7-6.5s7 2.5 7 6.5" strokeLinecap="round" />
+    </svg>
+  ),
   calendar: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="4" y="5" width="16" height="15" rx="1.5" />
@@ -29,20 +35,16 @@ const icons = {
   )
 };
 
-const NAV = [
-  { href: '/', icon: icons.find, label: 'Find My Officials' },
-  { href: '/calendars', icon: icons.calendar, label: 'Election Calendars' },
-  { href: '/why', icon: icons.capitol, label: 'Who We Are & Why This Matters' }
-];
-
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('xud-theme');
       if (saved) setTheme(saved);
+      setHasSaved(Boolean(localStorage.getItem('xud-address')));
     } catch {}
   }, []);
 
@@ -55,10 +57,18 @@ export default function Header() {
     } catch {}
   }
 
+  // "My Officials" only appears once there's an address saved on this device.
+  const nav = [
+    { href: '/?new=1', icon: icons.find, label: 'Who represents me?' },
+    hasSaved && { href: '/officials', icon: icons.person, label: 'My Officials' },
+    { href: '/calendars', icon: icons.calendar, label: 'Election Calendars' },
+    { href: '/why', icon: icons.capitol, label: 'Why this matters' }
+  ].filter(Boolean);
+
   return (
     <>
       <header className="site-header">
-        <div className="header-left">
+        <div className="header-side">
           <button
             className="menu-btn"
             onClick={() => setOpen(true)}
@@ -67,13 +77,10 @@ export default function Header() {
           >
             ☰
           </button>
-          <Wordmark />
         </div>
-        <div className="header-right">
-          <nav>
-            <a href="/why">Why this matters?</a>
-          </nav>
-          <button className="theme-toggle" onClick={toggleTheme}>
+        <Wordmark />
+        <div className="header-side header-side-end">
+          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle color theme">
             <span className="theme-dot" />
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
@@ -89,7 +96,7 @@ export default function Header() {
           </button>
         </div>
         <nav className="drawer-nav">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
               <span className="drawer-icon">{item.icon}</span> {item.label}
             </a>

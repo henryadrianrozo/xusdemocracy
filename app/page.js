@@ -1,43 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Wordmark from '@/components/Wordmark';
 
-export default function Home() {
+function Home() {
   const [address, setAddress] = useState('');
-  const [remember, setRemember] = useState(false);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const params = useSearchParams();
+  // /?new=1 means "I want to look up a different address" — skip the
+  // auto-redirect that normally sends returning visitors to their officials.
+  const forceNew = params.get('new') === '1';
 
-  // Prefill from a previously remembered address (stored only in this browser).
-  // First visit of a session with a remembered address goes straight to results;
-  // navigating back here afterward shows the form so it can be changed.
   useEffect(() => {
     try {
       const saved = localStorage.getItem('xud-address');
-      const seenHome = sessionStorage.getItem('xud-home-seen');
-      sessionStorage.setItem('xud-home-seen', '1');
-      if (saved) {
+      if (!saved) return;
+      if (forceNew) {
         setAddress(saved);
-        setRemember(true);
-        if (!seenHome) {
-          sessionStorage.setItem('xud-query', JSON.stringify({ address: saved }));
-          router.replace('/results');
-        }
+        return;
       }
+      // Returning visitor with a saved address: go straight to their officials.
+      sessionStorage.setItem('xud-query', JSON.stringify({ address: saved }));
+      router.replace('/officials');
     } catch {}
-  }, [router]);
+  }, [router, forceNew]);
 
   function submitAddress(e) {
     e.preventDefault();
-    try {
-      if (remember) localStorage.setItem('xud-address', address);
-      else localStorage.removeItem('xud-address');
-    } catch {}
     sessionStorage.setItem('xud-query', JSON.stringify({ address }));
-    router.push('/results');
+    router.push('/officials');
   }
 
   function useMyLocation() {
@@ -53,7 +47,7 @@ export default function Home() {
           'xud-query',
           JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude })
         );
-        router.push('/results');
+        router.push('/officials');
       },
       () => {
         setLocating(false);
@@ -66,13 +60,14 @@ export default function Home() {
   return (
     <div className="container">
       <section className="hero">
-        <div className="eyebrow">Connect · Inform · Empower</div>
         <div className="hero-wordmark">
           <Wordmark href={null} />
         </div>
         <h1>Know who represents you.</h1>
         <p>Enter your address and see your officials and upcoming elections in seconds.</p>
-        <span className="hero-privacy">Knowing is the first step to doing. Keep your reps accountable!</span>
+        <span className="hero-privacy">
+          Knowing is the first step to doing. Keep your representatives accountable!
+        </span>
         <form onSubmit={submitAddress} className="lookup-form">
           <input
             type="text"
@@ -83,16 +78,8 @@ export default function Home() {
             autoComplete="street-address"
             required
           />
-          <button type="submit">Find my officials</button>
+          <button type="submit">Who represents me?</button>
         </form>
-        <label className="remember-row">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-          />
-          Remember my address on this device
-        </label>
         <button className="location-btn" onClick={useMyLocation} disabled={locating}>
           <span className="location-dot" />
           {locating ? 'Getting your location…' : 'Use my current location'}
@@ -133,5 +120,13 @@ export default function Home() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="container" />}>
+      <Home />
+    </Suspense>
   );
 }

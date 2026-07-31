@@ -8,6 +8,8 @@ import {
 } from '@/lib/geocodio';
 import { getUpcomingElections } from '@/lib/elections';
 import { getGovernor } from '@/lib/governors';
+import { getLegislature } from '@/lib/legislatures';
+import { getRegistrationDeadline } from '@/lib/registration';
 import { FIPS_TO_STATE } from '@/lib/states';
 
 // PRIVACY: The address/coordinates are used only for this lookup. They are
@@ -68,6 +70,8 @@ export async function POST(request) {
       stateLegsPromise
     ]);
 
+    const elections = getUpcomingElections(geo.state, geo.stateFullName);
+
     return Response.json({
       matchedAddress: geo.matchedAddress,
       state: geo.state,
@@ -75,12 +79,16 @@ export async function POST(request) {
       congressionalDistrict: geo.congressionalDistrict,
       federal,
       governor: getGovernor(geo.state),
+      legislature: getLegislature(geo.state),
       stateDistricts: {
         senate: geo.stateSenateDistrict,
         house: geo.stateHouseDistrict
       },
       stateLegislators: stateLegs, // null when Geocodio key not configured
-      ...getUpcomingElections(geo.state, geo.stateFullName)
+      ...elections,
+      registrationDeadline: elections.elections[0]
+        ? getRegistrationDeadline(geo.state, geo.stateFullName, elections.elections[0].date)
+        : null
     });
   } catch (err) {
     console.error('lookup failed:', err.message); // message only, never the address
