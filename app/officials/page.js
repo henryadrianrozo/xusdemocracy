@@ -393,7 +393,7 @@ export default function Officials() {
               <SubTitle>Executive</SubTitle>
               <p className="sub-lede">
                 You do not get your own President the way you get your own representative, but
-                you do vote for this office, so it belongs here rather than below.
+                you do vote for this office.
               </p>
               <RepCard rep={national.president} />
               <RepCard rep={national.vicePresident} />
@@ -511,7 +511,7 @@ export default function Officials() {
         </MajorSection>
 
         <p className="feedback-note">
-          Something look off? Wrong rep, bad date, missing info?{' '}
+          Something looks off? Wrong rep, bad date, missing info?{' '}
           <a href="mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%3A%20something%20looks%20off">
             Let us know
           </a>{' '}
