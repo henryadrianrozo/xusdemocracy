@@ -1,5 +1,11 @@
 # XUsDemocracy project brain
 
+<!-- STATUS:BEGIN -->
+**Updated:** 2026-09-12 · `42c0a29`  
+**State:** Live. Address to representatives, nonpartisan, nothing stored.  
+**Next:** Hard deadline: the primary and general election data in lib/primaries.js and lib/elections.js is 2026-only and expires 3 Nov 2026. No 2027/2028 data exists. Needs replacing before then or the site starts lying.
+<!-- STATUS:END -->
+
 Read this first. It records what the project is, where every piece of data comes
 from, what rots and when, and what is deliberately not built yet.
 
@@ -319,3 +325,15 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
     is deliberate, because showing the wrong face on a civic site is worse than
     showing initials. (Governors were fixed in July 2026; all 51 now carry NGA
     headshots.)
+
+## Status block
+
+At the end of a session, and in the same commit as any feature-sized piece of
+work, update the `STATUS:BEGIN`/`STATUS:END` block at the top of
+`CLAUDE.md`: the date, the current commit hash, and the
+State / Blocked / Next lines. Keep it to those few lines; the detail belongs in
+the prose below it.
+
+`~/Projects/PROJECT_STATUS.md` is generated from that block, so it is the only
+place this project's status needs to be written. Nothing is copied anywhere
+else by hand.
