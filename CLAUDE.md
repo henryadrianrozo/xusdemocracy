@@ -1,9 +1,12 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-12 · `42c0a29`  
-**State:** Live. Address to representatives, nonpartisan, nothing stored.  
-**Next:** Hard deadline: the primary and general election data in lib/primaries.js and lib/elections.js is 2026-only and expires 3 Nov 2026. No 2027/2028 data exists. Needs replacing before then or the site starts lying.
+**Updated:** 2026-09-12 · `ead5107`  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored.  
+**Last shipped:** Brighter light-theme accent colors and two copy fixes.  
+**Missing:** Nothing in the product itself. The data is the gap: primaries and the general election are 2026-only.  
+**Blocked:** Hard expiry. lib/primaries.js and lib/elections.js hold 2026 data only, and GENERAL_2026 is a single hardcoded object. After 3 November 2026 the site gives wrong answers.  
+**Next:** Source and load 2027/2028 election data before 3 November 2026.
 <!-- STATUS:END -->
 
 Read this first. It records what the project is, where every piece of data comes
