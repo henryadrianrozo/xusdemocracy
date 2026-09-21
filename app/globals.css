@@ -296,61 +296,71 @@ a { color: var(--blue); }
 .matched-address { color: var(--muted); font-size: 0.92rem; margin: 0; }
 .matched-address strong { color: var(--text); }
 
-/* The election bar: the deadline facts, at the top where they get read. Shown
-   only inside 90 days of an election, so out of season there is nothing here.
-   Each chip jumps to the Elections section; the action beside it does the
-   thing directly, so the scroll is never the only way through. */
-.election-bar {
+/* The election banner: the next election at the top of /officials, where it gets
+   read. The smaller sibling of .election-card further down, same shape (count on
+   the left, details on the right) at a lighter weight, in red because it is the
+   urgent one. Shown only inside 90 days of an election, so out of season there
+   is nothing here. */
+.election-banner {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-.election-chip {
-  flex: 1 1 180px;
-  display: flex;
-  flex-direction: column;
+  gap: 16px;
   align-items: flex-start;
   background: color-mix(in srgb, var(--red) 6%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
   border-radius: var(--radius-card);
-  padding: 14px 16px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
 }
-.chip-main {
+.banner-count {
+  background: var(--red);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 78px;
+  text-align: center;
+  line-height: 1.15;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
-.chip-label {
+.banner-count-num { font-size: 1.6rem; font-weight: 800; }
+.banner-info { flex: 1 1 240px; min-width: 0; }
+.banner-info h2 { margin: 0 0 2px; font-size: 1.05rem; color: var(--text); }
+.banner-date { margin: 0 0 10px; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.banner-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 14px;
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+}
+.banner-facts dt {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
+  align-self: center;
 }
-.chip-fact { font-size: 1.05rem; font-weight: 700; color: var(--text); }
-.chip-main:hover .chip-fact { color: var(--blue); }
-.chip-sub { font-size: 0.82rem; color: var(--muted); }
-.chip-action {
-  margin-top: 10px;
+.banner-facts dd { margin: 0; color: var(--text); font-weight: 600; }
+.banner-actions { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.banner-actions a,
+.banner-actions button {
   padding: 0;
   background: none;
   border: 0;
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: var(--blue);
   text-decoration: none;
   cursor: pointer;
 }
-.chip-action:hover { text-decoration: underline; }
+.banner-actions a:hover,
+.banner-actions button:hover { text-decoration: underline; }
 
 /* Save-this-address offer, shown once after a successful lookup. */
 .save-prompt {
@@ -477,12 +487,13 @@ details[open] > summary .caret { transform: rotate(90deg); }
   margin: -2px 0 14px;
   max-width: 60ch;
 }
+/* Full width of the section, no character cap. The old 62ch cap left the intro
+   filling only part of the line above it. */
 .major-lede {
   color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.65;
-  margin-bottom: 22px;
-  max-width: 62ch;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin-bottom: 18px;
 }
 .major-body > .rep-card,
 .major-body > .election-card,
@@ -978,5 +989,8 @@ details[open] > summary .caret { transform: rotate(90deg); }
   .rep-avatar { width: 104px; height: 104px; }
   .rep-meta, .rep-actions { justify-content: center; }
   .save-prompt { flex-direction: column; align-items: flex-start; }
-  .election-bar { flex-direction: column; }
+  .election-banner { flex-direction: column; }
+  /* In a column, flex-basis is a height, so drop the 240px that sizes the row layout. */
+  .banner-info { flex: 0 0 auto; width: 100%; }
+  .banner-count { flex-direction: row; align-items: baseline; justify-content: center; gap: 8px; width: 100%; }
 }

@@ -80,81 +80,71 @@ function jumpTo(id) {
   });
 }
 
-// The two facts with a deadline attached, at the top where they get read.
-// Elections itself stays at the bottom, because that is where it has room for
-// the dates, the explanation, and the calendar feeds. Each chip jumps down to
-// the full section, and carries its own link so the thing a reader came to do
-// never depends on the scroll.
-function ElectionChip({ label, fact, sub, action, onJump }) {
-  return (
-    <div className="election-chip">
-      <button className="chip-main" onClick={onJump}>
-        <span className="chip-label">{label}</span>
-        <span className="chip-fact">{fact}</span>
-        {sub && <span className="chip-sub">{sub}</span>}
-      </button>
-      {action}
-    </div>
-  );
+// A chip is a { fact, sub } pair built for a tight space. Here there is room
+// for a line, so join them into one.
+function lowerFirst(text) {
+  return text.charAt(0).toLowerCase() + text.slice(1);
 }
 
-function ElectionBar({ election, deadline, votingWindow, registrationUrl }) {
+function registrationLine(deadline) {
+  const { fact, sub } = deadline.chip;
+  // Only a real cutoff date can be said to "close". Same-day and no-registration
+  // states carry a phrase instead of a date, so they read as one.
+  if (!deadline.deadlineDate) return `${fact}, ${lowerFirst(sub)}`;
+  return deadline.daysLeft > 0 ? `Closes ${fact}, ${sub}` : `Closed ${fact}`;
+}
+
+// The next election, at the top where it gets read: what it is, how far off, and
+// the three things a reader might do about it. It is the smaller sibling of the
+// Elections card further down, with the same countdown-on-the-left shape, so the
+// two read as one idea. The red outline stays because this is the urgent one.
+// Elections itself stays at the bottom, where there is room for the full list,
+// the explanation and the calendar feeds.
+function ElectionBanner({ election, deadline, votingWindow, registrationUrl, pollingPlaceUrl }) {
   // Time-bound on purpose. Out of season this is noise, so it simply is not
   // there. 90 days is about when a general election starts having deadlines a
   // reader can actually act on.
   if (!election || election.daysUntil > 90) return null;
 
-  const dayLabel = new Date(election.date + 'T00:00:00').toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
+  const today = election.daysUntil === 0;
 
   return (
-    <div className="election-bar" role="region" aria-label="Your next election">
-      {votingWindow && (
-        <ElectionChip
-          label="Early voting"
-          fact={votingWindow.chip.fact}
-          sub={votingWindow.chip.sub}
-          onJump={() => jumpTo('elections')}
-        />
-      )}
+    <div className="election-banner" role="region" aria-label="Your next election">
+      <div className="banner-count">
+        <span className="banner-count-num">{today ? 'Today' : election.daysUntil}</span>
+        {!today && <span>{election.daysUntil === 1 ? 'day away' : 'days away'}</span>}
+      </div>
+      <div className="banner-info">
+        <h2>{election.name}</h2>
+        <p className="banner-date">{longDate(election.date)}</p>
 
-      {deadline && (
-        <ElectionChip
-          label="Registration closes"
-          fact={deadline.chip.fact}
-          sub={deadline.chip.sub}
-          onJump={() => jumpTo('elections')}
-          action={
-            <a
-              className="chip-action"
-              href={registrationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Register →
-            </a>
-          }
-        />
-      )}
+        {(votingWindow || deadline) && (
+          <dl className="banner-facts">
+            {votingWindow && (
+              <>
+                <dt>Early voting</dt>
+                <dd>{`${votingWindow.chip.fact}, ${votingWindow.chip.sub}`}</dd>
+              </>
+            )}
+            {deadline && (
+              <>
+                <dt>Registration</dt>
+                <dd>{registrationLine(deadline)}</dd>
+              </>
+            )}
+          </dl>
+        )}
 
-      <ElectionChip
-        label="Election Day"
-        fact={dayLabel}
-        sub={
-          election.daysUntil === 0
-            ? 'Today'
-            : `${election.daysUntil} ${election.daysUntil === 1 ? 'day' : 'days'} away`
-        }
-        onJump={() => jumpTo('elections')}
-        action={
-          <button className="chip-action" onClick={() => jumpTo('election-calendars')}>
-            Add to my calendar →
-          </button>
-        }
-      />
+        <div className="banner-actions">
+          <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
+            Check or register to vote →
+          </a>
+          <a href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+            Find my polling place →
+          </a>
+          <button onClick={() => jumpTo('election-calendars')}>Add to my calendar →</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -436,6 +426,7 @@ export default function Officials() {
     stateLegislators,
     elections,
     registrationUrl,
+    pollingPlaceUrl,
     registrationDeadline,
     votingWindow,
     note
@@ -450,24 +441,23 @@ export default function Officials() {
         ? `${stateFullName}'s ${ordinal(cd)} district`
         : null;
 
+  // Kept to about three lines at full width. Long enough to say what the level
+  // does, short enough that the cards are what the reader sees first.
   const federalLede =
-    'Congress writes federal law, including taxes, immigration, the military, and the ' +
-    'national budget. It has two chambers. Every state elects two U.S. senators, who ' +
-    'represent the whole state and serve six-year terms. The House is divided by population ' +
-    'into 435 districts, each electing one representative to a two-year term, so the entire ' +
-    'House is up for election every other year.' +
+    'Congress writes federal law, from taxes to the military. Each state elects two U.S. ' +
+    'senators to six-year terms, and each of 435 House districts elects one representative ' +
+    'every two years.' +
     (districtPhrase ? ` You live in ${districtPhrase}.` : '');
 
   const stateLede = (() => {
     const base =
-      'Your state government decides most of what you actually live with day to day: ' +
-      'schools, roads, policing, housing, and health care rules. The governor runs the ' +
-      'executive branch.';
+      'Your state decides most of what you live with day to day: schools, roads, policing, ' +
+      'housing, and health care. The governor runs the executive branch.';
     if (!legislature) return base;
     if (legislature.unicameral) {
-      return `${base} ${stateFullName}'s ${legislature.name} is unicameral, meaning ${legislature.upperSeats} members in a single chamber with no house of representatives, so you have one legislator here.`;
+      return `${base} ${stateFullName}'s ${legislature.name} is unicameral, with ${legislature.upperSeats} members in one chamber, so you have one legislator here.`;
     }
-    return `${base} ${stateFullName}'s ${legislature.name} has ${legislature.upperSeats} senators and ${legislature.lowerSeats} members of the ${legislature.lower}, and you are represented by one of each.`;
+    return `${base} ${stateFullName}'s ${legislature.name} has ${legislature.upperSeats} senators and ${legislature.lowerSeats} members of the ${legislature.lower}, and you have one of each.`;
   })();
 
   const hasStateLegs =
@@ -500,11 +490,12 @@ export default function Officials() {
           </p>
         </header>
 
-        <ElectionBar
+        <ElectionBanner
           election={elections[0]}
           deadline={registrationDeadline}
           votingWindow={votingWindow}
           registrationUrl={registrationUrl}
+          pollingPlaceUrl={pollingPlaceUrl}
         />
 
         {askSave && (
@@ -593,7 +584,7 @@ export default function Officials() {
         <MajorSection
           id="elections"
           title="Elections"
-          lede="A general election is the one that fills the seat: every voter picks between the candidates who made the ballot. A primary comes earlier and decides who those candidates are, and far fewer people vote in it, which makes each ballot cast there count for more. Here is what is next where you live."
+          lede="A general election fills the seat: every voter picks among the candidates on the ballot. A primary comes earlier and decides who those candidates are. Far fewer people vote in primaries, so each ballot counts for more. Here is what is next where you live."
         >
           {registrationDeadline && (
             <div className="deadline-box">
@@ -602,7 +593,7 @@ export default function Officials() {
               {votingWindow && <p className="deadline-voting">{votingWindow.headline}</p>}
               <p className="deadline-pointer">
                 <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-                  Check or update my registration at vote.gov →
+                  Check or register to vote at vote.gov →
                 </a>
               </p>
             </div>
@@ -624,15 +615,21 @@ export default function Officials() {
           <p className="election-note">{note}</p>
 
           <div className="action-block">
-            <SubTitle>Register to Vote</SubTitle>
+            <SubTitle>Register and Find Where to Vote</SubTitle>
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
               vote.gov is the federal government&apos;s official portal, and it hands you
-              straight to {stateFullName}&apos;s election office.
+              straight to {stateFullName}&apos;s election office. The polling place link goes to
+              that office&apos;s own lookup, where you enter your address.
             </p>
-            <a className="cta-link" href={registrationUrl} target="_blank" rel="noopener noreferrer">
-              Check or update my registration →
-            </a>
+            <div className="cta-row">
+              <a className="cta-link" href={registrationUrl} target="_blank" rel="noopener noreferrer">
+                Check or register to vote →
+              </a>
+              <a className="cta-link" href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+                Find my polling place →
+              </a>
+            </div>
           </div>
 
           <div className="action-block" id="election-calendars">

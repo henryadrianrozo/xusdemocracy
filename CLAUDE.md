@@ -2,11 +2,11 @@
 
 <!-- STATUS:BEGIN -->
 **Updated:** 2026-09-21 · `e84b3cb`  
-**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, the election bar, legislator term and next-election facts, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
-**Last shipped:** Elections made multi-cycle so the site and its 52 state pages do not empty out after the general; the early-voting window is tied to the 2026 general only; calendar feeds cover both generals.  
-**Missing:** Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The chip scroll, dark theme, 375px layout and rendered cards have never been seen in a browser, because the Chrome extension was offline.  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, a one-card election banner at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
+**Last shipped:** The three-chip election bar became one horizontal banner (countdown left, details and links right). New `lib/pollingplace.js` links each state's own polling place lookup, from the banner, the Elections section and all 52 state pages. One register verb everywhere: "Check or register to vote". Section intros are full width and about three lines.  
+**Missing:** 23 of the 51 polling links are unverified, because those state sites block scripts or would not connect (list in the header of `lib/pollingplace.js`); a browser check clears them. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The Chrome extension was offline again, so the banner was checked only as static HTML in headless Chrome (desktop and 375px, light and dark), not in the live app, and the "Add to my calendar" scroll has still never been tapped.  
 **Blocked:** Nothing on our side.  
-**Next:** Adrian taps the three election-bar chips once on a phone. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
+**Next:** Adrian clicks the polling links once from a browser. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
 <!-- STATUS:END -->
 
 Read this first. It records what the project is, where every piece of data comes
@@ -66,6 +66,7 @@ own `localStorage` and never leaves the browser.
 | **General elections** | `lib/elections.js` (`GENERALS`) | Statute: Tuesday after the first Monday in November | **Computed**, 2026 and 2028 | Add the next year to `GENERALS` before Nov 2028. Dates come from `generalElectionDate()`, so only the label and description are typed by hand. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
 | Registration deadlines | `lib/registration.js` | CEIR 2026 survey | Static, statutory | When a legislature amends election law. Re-check each spring. |
+| **Polling place lookups** | `lib/pollingplace.js` | NASS "Find Your Polling Place", each link a state's own tool | Static, links only | State sites reorganize portals without notice. Re-check each spring with the registration deadlines. 28 reached, 23 unverified (header lists them). FL, GA and WY were moved from NASS's links to where those redirect. |
 | **Early + mail voting windows** | `lib/earlyvoting.js` | CEIR "2026 Early and Mail Voting Dates", Sept 2026 | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026**, but goes quiet rather than wrong. 51 jurisdictions loaded; Puerto Rico is not in CEIR. |
 | Legislature election cycles | `lib/legislatures.js` (`ELECTION_CYCLES`) | 2026 and 2024 state legislative election tables citing Ballotpedia, verified 21 Sept 2026 | Static, verified | A constitutional change, a term-length change, or a 2-4-4 shift after redistricting. The year is computed, so it does not go stale each November. |
 | FIPS ↔ state | `lib/states.js` | Census | Static | Never. |
@@ -169,11 +170,14 @@ early-voting, absentee, or mail data anywhere in the repo.
    status of `open` / `upcoming` / `closed` / `excuse-required`, plus a
    sentence for the deadline box and a `chip` for the election bar. Wired
    through `/api/lookup` as `votingWindow`.
-2. **The election bar** at the top of `/officials`: three chips showing early
-   voting status, the registration cutoff, and Election Day. Each jumps to the
-   Elections section; the registration and calendar chips also carry a direct
-   link so the action never depends on the scroll. Renders only inside 90 days
-   of an election, so it disappears out of season instead of going stale.
+2. **The election banner** at the top of `/officials`. It began as three chips
+   (early voting, registration cutoff, Election Day) and became one horizontal
+   card on 2026-09-21: the countdown on the left, the election name, date, early
+   voting and registration lines on the right, then three links (check or
+   register to vote, find my polling place, add to my calendar). It is the
+   smaller sibling of the blue Elections card, in red because it is the urgent
+   one. Renders only inside 90 days of an election, so it disappears out of
+   season instead of going stale.
 3. **Congress and Executive now fold**, remembered in `xud-collapsed`. See the
    note below, this reverses an earlier decision on purpose.
 4. **The deadline box is now a link**, not a pointer to one, matching what
@@ -223,10 +227,11 @@ than a change to `.sub-title` itself.
 
 ### Still open
 
-3. **The chip scroll is unverified.** `jumpTo()` opens the Elections section
-   then scrolls on the next animation frame. Opening the section was confirmed
-   earlier; the scroll could not be tested because automated tabs block
-   programmatic scrolling. Tap all three chips by hand.
+3. **The calendar scroll is unverified.** `jumpTo()` opens the Elections section
+   then scrolls on the next animation frame, and now serves only the banner's
+   "Add to my calendar" link. Opening the section was confirmed earlier; the
+   scroll could not be tested because automated tabs block programmatic
+   scrolling. Tap it by hand.
 4. **Not checked in a browser:** dark theme, the 375px layout, and the
    rendering of the bar for states other than Virginia. The API output was
    checked for FL, WI, TX, AL, CO, ND and IL, and the date-dependent branches

@@ -46,7 +46,7 @@ async function loadState(slug) {
   // District -1 matches no House seat, so this returns senators only. A state
   // page has no way to know which of a state's districts the reader lives in.
   const { senators } = await getFederalReps(code, -1);
-  const { elections, registrationUrl, note } = getUpcomingElections(code, name);
+  const { elections, registrationUrl, pollingPlaceUrl, note } = getUpcomingElections(code, name);
 
   return {
     code,
@@ -54,6 +54,7 @@ async function loadState(slug) {
     senators,
     elections,
     registrationUrl,
+    pollingPlaceUrl,
     note,
     governor: getGovernor(code),
     legislature: getLegislature(code),
@@ -96,6 +97,7 @@ export default async function StatePage({ params }) {
     senators,
     elections,
     registrationUrl,
+    pollingPlaceUrl,
     note,
     governor,
     legislature,
@@ -112,6 +114,13 @@ export default async function StatePage({ params }) {
     deadline && {
       q: `What is the voter registration deadline in ${name}?`,
       a: `${deadline.headline} ${deadline.detail}`
+    },
+    {
+      q: `Where do I vote in ${name}?`,
+      // No address in the answer on purpose. This text is indexed and quoted, and
+      // a state can move its lookup tool without telling anyone, so the live
+      // link stays on the page rather than in structured data.
+      a: `Your polling place depends on your address. ${name}'s election office runs an official lookup where you enter it, linked on this page. Early voting sites can differ from your Election Day polling place.`
     },
     next && {
       q: `When is the next election in ${name}?`,
@@ -182,7 +191,12 @@ export default async function StatePage({ params }) {
             <p>{deadline.detail}</p>
             <p className="deadline-pointer">
               <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-                Register or check your registration at vote.gov →
+                Check or register to vote at vote.gov →
+              </a>
+            </p>
+            <p className="deadline-pointer">
+              <a href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+                Find my polling place in {name} →
               </a>
             </p>
           </div>
