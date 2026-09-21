@@ -4,9 +4,9 @@
 **Updated:** 2026-09-21 · `e84b3cb`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, a one-card election banner at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
 **Last shipped:** The three-chip election bar became one horizontal banner (countdown left, details and links right). New `lib/pollingplace.js` links each state's own polling place lookup, from the banner, the Elections section and all 52 state pages. One register verb everywhere: "Check or register to vote". Section intros are full width and about three lines.  
-**Missing:** 23 of the 51 polling links are unverified, because those state sites block scripts or would not connect (list in the header of `lib/pollingplace.js`); a browser check clears them. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The Chrome extension was offline again, so the banner was checked only as static HTML in headless Chrome (desktop and 375px, light and dark), not in the live app, and the "Add to my calendar" scroll has still never been tapped.  
+**Missing:** 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The banner was seen live on desktop only; 375px and dark were checked as static HTML in headless Chrome.  
 **Blocked:** Nothing on our side.  
-**Next:** Adrian clicks the polling links once from a browser. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
+**Next:** Adrian clicks the NM and OK polling links, and the other unconfirmed ones when convenient. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
 <!-- STATUS:END -->
 
 Read this first. It records what the project is, where every piece of data comes
@@ -66,7 +66,7 @@ own `localStorage` and never leaves the browser.
 | **General elections** | `lib/elections.js` (`GENERALS`) | Statute: Tuesday after the first Monday in November | **Computed**, 2026 and 2028 | Add the next year to `GENERALS` before Nov 2028. Dates come from `generalElectionDate()`, so only the label and description are typed by hand. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
 | Registration deadlines | `lib/registration.js` | CEIR 2026 survey | Static, statutory | When a legislature amends election law. Re-check each spring. |
-| **Polling place lookups** | `lib/pollingplace.js` | NASS "Find Your Polling Place", each link a state's own tool | Static, links only | State sites reorganize portals without notice. Re-check each spring with the registration deadlines. 28 reached, 23 unverified (header lists them). FL, GA and WY were moved from NASS's links to where those redirect. |
+| **Polling place lookups** | `lib/pollingplace.js` | NASS "Find Your Polling Place", each link a state's own tool | Static, links only | State sites reorganize portals without notice. Re-check each spring with the registration deadlines. 36 loaded in a browser, 15 unconfirmed (header lists them). FL, GA and WY were moved from NASS's links to where those redirect. |
 | **Early + mail voting windows** | `lib/earlyvoting.js` | CEIR "2026 Early and Mail Voting Dates", Sept 2026 | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026**, but goes quiet rather than wrong. 51 jurisdictions loaded; Puerto Rico is not in CEIR. |
 | Legislature election cycles | `lib/legislatures.js` (`ELECTION_CYCLES`) | 2026 and 2024 state legislative election tables citing Ballotpedia, verified 21 Sept 2026 | Static, verified | A constitutional change, a term-length change, or a 2-4-4 shift after redistricting. The year is computed, so it does not go stale each November. |
 | FIPS ↔ state | `lib/states.js` | Census | Static | Never. |
@@ -227,13 +227,12 @@ than a change to `.sub-title` itself.
 
 ### Still open
 
-3. **The calendar scroll is unverified.** `jumpTo()` opens the Elections section
-   then scrolls on the next animation frame, and now serves only the banner's
-   "Add to my calendar" link. Opening the section was confirmed earlier; the
-   scroll could not be tested because automated tabs block programmatic
-   scrolling. Tap it by hand.
-4. **Not checked in a browser:** dark theme, the 375px layout, and the
-   rendering of the bar for states other than Virginia. The API output was
+3. **The calendar scroll works.** Confirmed live on 2026-09-21: "Add to my
+   calendar" opens the Elections section and lands on the Election Calendars
+   block. `jumpTo()` now serves only that link.
+4. **Not checked in the live app:** dark theme, the 375px layout (both checked
+   only as static HTML in headless Chrome), and the banner for states other
+   than Virginia. The API output was
    checked for FL, WI, TX, AL, CO, ND and IL, and the date-dependent branches
    were exercised with a faked clock. The legislator facts were confirmed in the
    production API for VA, WI and TX; the pulled Vercel env gave no working
@@ -391,7 +390,19 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
 ## Next moves
 
 **The September 2026 election push is shipped.** See that section above for
-the two open checks (chip scroll, browser pass).
+the open checks (polling links, dark theme and 375px in the live app).
+
+**Dates to remember (Adrian sets the reminders):**
+- **Now:** click the NM and OK polling links; they returned 403 in a browser.
+- **3 November 2026, Election Day:** nothing to do. The early-voting window and
+  the banner's early-voting line go quiet by themselves, and the site switches
+  to the 2028 general. Glance at `/officials` once on 4 November.
+- **Week of 9 November 2026:** ask Claude to re-verify all 50 governors against
+  NGA (36 governorships were decided on 3 November).
+- **January 2027:** ask Claude to re-check congressional leadership.
+- **Spring 2027:** re-check registration deadlines and polling links.
+- **Whenever published:** 2027 odd-year elections and 2028 primaries.
+- **Before November 2028:** add 2030 to `GENERALS`.
 
 **Before and after November 2026:**
 1. Done 2026-09-21: elections are multi-cycle (`GENERALS`), see the maintenance
