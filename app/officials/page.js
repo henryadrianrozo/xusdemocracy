@@ -37,14 +37,126 @@ function MajorSection({ id, title, lede, children }) {
   );
 }
 
-// One step down from a major title, and deliberately NOT collapsible.
-// Congress and Executive were briefly made into dropdowns and it read as
-// clutter: nesting a collapsible inside a collapsible inside a page that
-// already has the Cabinet and Court dropdowns below gave the section three
-// levels of disclosure and no clear hierarchy. Only Federal, State, and
-// Elections collapse.
+// One step down from a major title. Used as a plain heading for the Elections
+// action blocks, which have one thing each under them and nothing to fold.
 function SubTitle({ children }) {
   return <h3 className="sub-title">{children}</h3>;
+}
+
+// Congress and Executive are the only subheadings carrying a stack of cards, so
+// they are the only ones that fold. The affordance is the count pill, never a
+// caret. An earlier attempt gave these two their own triangles and it read as
+// clutter: a second row of arrows under the Federal arrow, on a page that also
+// has the Cabinet and Court dropdowns below. The pill says "there is more here"
+// without adding a third arrow to look at, which is what the national block
+// already does further down.
+function SubSection({ id, title, count, collapsed, onToggle, children }) {
+  return (
+    <details
+      className="sub-section"
+      open={!collapsed}
+      onToggle={(e) => onToggle(id, !e.currentTarget.open)}
+    >
+      <summary className="sub-title sub-title-toggle">
+        {title} <span className="national-count">{count}</span>
+      </summary>
+      {children}
+    </details>
+  );
+}
+
+// Opens the Elections section if the reader folded it away, then scrolls to the
+// part they asked for. Without the open step the browser would scroll to a
+// collapsed summary and appear to do nothing.
+function jumpTo(id) {
+  const section = document.getElementById('elections');
+  if (section) section.open = true;
+  // Wait a frame before scrolling. Opening the section changes the height of
+  // everything below it, and measuring before that reflow lands sends the
+  // scroll to the wrong place, or nowhere at all.
+  requestAnimationFrame(() => {
+    const target = document.getElementById(id) || section;
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+// The two facts with a deadline attached, at the top where they get read.
+// Elections itself stays at the bottom, because that is where it has room for
+// the dates, the explanation, and the calendar feeds. Each chip jumps down to
+// the full section, and carries its own link so the thing a reader came to do
+// never depends on the scroll.
+function ElectionChip({ label, fact, sub, action, onJump }) {
+  return (
+    <div className="election-chip">
+      <button className="chip-main" onClick={onJump}>
+        <span className="chip-label">{label}</span>
+        <span className="chip-fact">{fact}</span>
+        {sub && <span className="chip-sub">{sub}</span>}
+      </button>
+      {action}
+    </div>
+  );
+}
+
+function ElectionBar({ election, deadline, votingWindow, registrationUrl }) {
+  // Time-bound on purpose. Out of season this is noise, so it simply is not
+  // there. 90 days is about when a general election starts having deadlines a
+  // reader can actually act on.
+  if (!election || election.daysUntil > 90) return null;
+
+  const dayLabel = new Date(election.date + 'T00:00:00').toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  });
+
+  return (
+    <div className="election-bar" role="region" aria-label="Your next election">
+      {votingWindow && (
+        <ElectionChip
+          label="Early voting"
+          fact={votingWindow.chip.fact}
+          sub={votingWindow.chip.sub}
+          onJump={() => jumpTo('elections')}
+        />
+      )}
+
+      {deadline && (
+        <ElectionChip
+          label="Registration closes"
+          fact={deadline.chip.fact}
+          sub={deadline.chip.sub}
+          onJump={() => jumpTo('elections')}
+          action={
+            <a
+              className="chip-action"
+              href={registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Register →
+            </a>
+          }
+        />
+      )}
+
+      <ElectionChip
+        label="Election Day"
+        fact={dayLabel}
+        sub={
+          election.daysUntil === 0
+            ? 'Today'
+            : `${election.daysUntil} ${election.daysUntil === 1 ? 'day' : 'days'} away`
+        }
+        onJump={() => jumpTo('elections')}
+        action={
+          <button className="chip-action" onClick={() => jumpTo('election-calendars')}>
+            Add to my calendar →
+          </button>
+        }
+      />
+    </div>
+  );
 }
 
 // Offered once, after a successful lookup, when nothing is saved yet.
@@ -185,7 +297,31 @@ export default function Officials() {
   const [savedAddress, setSavedAddress] = useState(null);
   const [queryAddress, setQueryAddress] = useState(null);
   const [copied, setCopied] = useState(false);
+  // Which subheadings the reader has folded away, remembered between visits.
+  // Safe to read during the first render: that render is the loading note, so
+  // the server and the client agree on the markup either way.
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const raw = localStorage.getItem('xud-collapsed');
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set();
+    }
+  });
   const router = useRouter();
+
+  function toggleSection(id, isCollapsed) {
+    setCollapsed((prev) => {
+      if (prev.has(id) === isCollapsed) return prev;
+      const next = new Set(prev);
+      if (isCollapsed) next.add(id);
+      else next.delete(id);
+      try {
+        localStorage.setItem('xud-collapsed', JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  }
 
   useEffect(() => {
     // Normally the home page hands us a query. Landing here directly, from
@@ -301,6 +437,7 @@ export default function Officials() {
     elections,
     registrationUrl,
     registrationDeadline,
+    votingWindow,
     note
   } = result;
 
@@ -363,41 +500,54 @@ export default function Officials() {
           </p>
         </header>
 
+        <ElectionBar
+          election={elections[0]}
+          deadline={registrationDeadline}
+          votingWindow={votingWindow}
+          registrationUrl={registrationUrl}
+        />
+
         {askSave && (
           <SavePrompt address={queryAddress} onSaved={saveAddress} onDismiss={declineSave} />
         )}
 
-        <p className="page-note">
-          Every card below carries the contact details each official publishes: office phone,
-          website, and a contact form where they offer one. <strong>Save contact</strong> drops
-          them into your phone&apos;s address book, so reaching out later takes seconds instead
-          of a search.
-        </p>
-
         <MajorSection id="federal" title="Federal" lede={federalLede}>
-          <SubTitle>Congress</SubTitle>
-          {federal.senators.map((s) => (
-            <RepCard key={s.bioguide} rep={s} />
-          ))}
-          {federal.houseRep ? (
-            <RepCard rep={federal.houseRep} />
-          ) : (
-            <p className="empty-note">
-              No voting House member for this district. Washington, DC and the U.S. territories
-              elect a delegate who serves on committees but cannot vote on final passage.
-            </p>
-          )}
+          <SubSection
+            id="congress"
+            title="Congress"
+            count={federal.senators.length + (federal.houseRep ? 1 : 0)}
+            collapsed={collapsed.has('congress')}
+            onToggle={toggleSection}
+          >
+            {federal.senators.map((s) => (
+              <RepCard key={s.bioguide} rep={s} />
+            ))}
+            {federal.houseRep ? (
+              <RepCard rep={federal.houseRep} />
+            ) : (
+              <p className="empty-note">
+                No voting House member for this district. Washington, DC and the U.S.
+                territories elect a delegate who serves on committees but cannot vote on final
+                passage.
+              </p>
+            )}
+          </SubSection>
 
           {national && (
-            <>
-              <SubTitle>Executive</SubTitle>
+            <SubSection
+              id="executive"
+              title="Executive"
+              count={2}
+              collapsed={collapsed.has('executive')}
+              onToggle={toggleSection}
+            >
               <p className="sub-lede">
                 You do not get your own President the way you get your own representative, but
                 you do vote for this office.
               </p>
               <RepCard rep={national.president} />
               <RepCard rep={national.vicePresident} />
-            </>
+            </SubSection>
           )}
 
           <NationalBlock national={national} />
@@ -443,14 +593,17 @@ export default function Officials() {
         <MajorSection
           id="elections"
           title="Elections"
-          lede="Primaries decide who gets on the November ballot, and far fewer people vote in them, which makes each ballot cast there count for more. Here is what is next where you live."
+          lede="A general election is the one that fills the seat: every voter picks between the candidates who made the ballot. A primary comes earlier and decides who those candidates are, and far fewer people vote in it, which makes each ballot cast there count for more. Here is what is next where you live."
         >
           {registrationDeadline && (
             <div className="deadline-box">
               <h3>{registrationDeadline.headline}</h3>
               <p>{registrationDeadline.detail}</p>
+              {votingWindow && <p className="deadline-voting">{votingWindow.headline}</p>}
               <p className="deadline-pointer">
-                The link to register or check your registration is below the dates.
+                <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
+                  Check or update my registration at vote.gov →
+                </a>
               </p>
             </div>
           )}
@@ -482,7 +635,7 @@ export default function Officials() {
             </a>
           </div>
 
-          <div className="action-block">
+          <div className="action-block" id="election-calendars">
             <SubTitle>Election Calendars</SubTitle>
             <p>
               Subscribe once and your own calendar app fills in every {stateFullName} election

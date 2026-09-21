@@ -1,12 +1,12 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-12 · `ead5107`  
-**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored.  
-**Last shipped:** Brighter light-theme accent colors and two copy fixes.  
-**Missing:** Nothing in the product itself. The data is the gap: primaries and the general election are 2026-only.  
-**Blocked:** Hard expiry. lib/primaries.js and lib/elections.js hold 2026 data only, and GENERAL_2026 is a single hardcoded object. After 3 November 2026 the site gives wrong answers.  
-**Next:** Source and load 2027/2028 election data before 3 November 2026.
+**Updated:** 2026-09-20 · `a4e5c55`  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. The September election push is half done on main and NOT deployed.  
+**Last shipped:** Brighter light-theme accent colors and two copy fixes. Nothing from the election push has reached production.  
+**Missing:** Early voting data for 43 of 51 jurisdictions, and next-election dates for state legislators. Both were planned and approved, neither is built.  
+**Blocked:** The early voting table needs the CEIR spreadsheet, which needs Adrian's OK to download. Hard expiry still stands: after 3 November 2026 the 2026-only datasets go stale and 52 indexed state pages empty out.  
+**Next:** Load the remaining 43 early voting states, add state legislature term data, hand-check the chip scroll and the non-Virginia branches, then deploy.
 <!-- STATUS:END -->
 
 Read this first. It records what the project is, where every piece of data comes
@@ -66,6 +66,7 @@ own `localStorage` and never leaves the browser.
 | **General election** | `lib/elections.js` | Statute | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026.** `GENERAL_2026` is a single hardcoded object. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
 | Registration deadlines | `lib/registration.js` | CEIR 2026 survey | Static, statutory | When a legislature amends election law. Re-check each spring. |
+| **Early + mail voting windows** | `lib/earlyvoting.js` | CEIR "2026 Early and Mail Voting Dates", Sept 2026 | **STATIC, 2026 only, INCOMPLETE** | **Hard-expires 3 Nov 2026**, but goes quiet rather than wrong. Only 8 of 51 jurisdictions are loaded. |
 | FIPS ↔ state | `lib/states.js` | Census | Static | Never. |
 
 ### Source-quality notes
@@ -143,6 +144,98 @@ multi-cycle structure. See "Next moves" below.
 
 ---
 
+## The election-season push (September 2026, IN PROGRESS)
+
+Started 2026-09-20, 44 days before the general. **Partly done. Do not deploy
+until the data gap below is closed.**
+
+### Why it happened
+
+Early voting for the 3 November general was already underway when this started.
+Virginia, Minnesota, and South Dakota opened in-person early voting on
+18 September, North Carolina mailed absentee ballots on 4 September, and
+Illinois opened on 24 September. The site said nothing about any of it, because
+the model had no concept of an election being *in progress*: every election was
+a single-day point event with a `daysUntil` count, and there was no
+early-voting, absentee, or mail data anywhere in the repo.
+
+### What shipped in this pass
+
+1. **`lib/earlyvoting.js` (new).** Per-state early in-person and mail windows,
+   with `getVotingWindow(state, stateFullName, electionDate)` returning a
+   status of `open` / `upcoming` / `closed` / `excuse-required`, plus a
+   sentence for the deadline box and a `chip` for the election bar. Wired
+   through `/api/lookup` as `votingWindow`.
+2. **The election bar** at the top of `/officials`: three chips showing early
+   voting status, the registration cutoff, and Election Day. Each jumps to the
+   Elections section; the registration and calendar chips also carry a direct
+   link so the action never depends on the scroll. Renders only inside 90 days
+   of an election, so it disappears out of season instead of going stale.
+3. **Congress and Executive now fold**, remembered in `xud-collapsed`. See the
+   note below, this reverses an earlier decision on purpose.
+4. **The deadline box is now a link**, not a pointer to one, matching what
+   `/states/[slug]` already did. The early-voting sentence sits inside it.
+5. **The Elections lede explains general elections**, not just primaries. The
+   old copy only described primaries, which read as a non sequitur in a year
+   when most states have none left.
+6. **Removed** the "Every card below carries the contact details..." explainer
+   and its now-dead `.page-note` rule.
+7. `html { scroll-behavior: smooth }` under `prefers-reduced-motion`, the first
+   anchor navigation in the codebase.
+
+### Why Congress and Executive fold now, when they deliberately did not before
+
+`SubTitle` used to carry a comment saying these two were made into dropdowns
+once and reverted as clutter. That is still true, and the reason it is safe to
+revisit is that the earlier attempt gave them **carets**, which put a second row
+of triangles under the Federal triangle on a page that also has the Cabinet and
+Court dropdowns. This version uses the **count pill** instead, which is the
+affordance the national block already established, and which the CSS comment on
+`.caret` had already argued was sufficient on its own. One disclosure idiom per
+level. If you are tempted to add an arrow to these, read that comment first.
+
+`.sub-title` is shared with the Elections action blocks, which must stay plain
+headings, so the folding variant is `.sub-title-toggle` on a `<summary>` rather
+than a change to `.sub-title` itself.
+
+### NOT DONE. Pick up here.
+
+1. **`lib/earlyvoting.js` holds only 8 of 51 jurisdictions.** VA, MN, SD, NC, IL
+   have real windows; AL, MS, NH are marked excuse-required. Every other state
+   currently renders no early-voting chip and no early-voting line, which is
+   honest but nearly useless in the middle of an election. The source is CEIR's
+   "2026 Early and Mail Voting Dates" (September 2026 revision):
+   https://electioninnovation.org/research/dates-for-2026-early-in-person-and-mail-voting/
+   The page renders the data as a D3 chart, not a table, so the structured
+   figures are in the linked `.xlsx`, which has a per-state sources tab.
+   **Downloading that file was not authorized in this session; ask first.**
+   The `ALL_MAIL` set is already populated for all 9 all-mail jurisdictions.
+2. **State legislator next-election dates were not started.** This was planned
+   and approved, and is the thing that prompted the whole review: a state
+   senator card shows no next election while the governor card does. The cause
+   is not a rendering bug. `mapLegislators()` in `lib/geocodio.js` builds a
+   nine-key object with no `facts` array, so `RepCard.js:144` short-circuits to
+   `null`. The governor is the only office in the repo carrying a
+   `nextElection` field. The fix is to extend `lib/legislatures.js` with
+   `upperTerm` / `lowerTerm` plus either a whole-chamber next year or a class
+   map, then have `mapLegislators()` emit `facts` in the shape
+   `['4-year term', 'Next election November 2027']`, which needs no `RepCard`
+   change. **Where a senate is staggered and the per-district class is not
+   confidently sourced, emit the term length alone and no year. Never guess.**
+   Virginia is the check case: all 40 senate seats run together, so Lamont
+   Bagby should read November 2027.
+3. **The chip scroll is unverified.** `jumpTo()` opens the Elections section
+   then scrolls on the next animation frame. Opening the section works and was
+   confirmed; the scroll itself could not be tested because the automated tab
+   blocks programmatic scrolling, including a direct `scrollTop` assignment.
+   Click all three chips by hand before shipping.
+4. **Not checked at all:** dark theme, the 375px layout, and any state other
+   than Virginia. The branches that need exercising are IL (same-day plus a
+   future early-voting start), AL (excuse required), CO or WA (all-mail), and
+   ND (the `noRegistration` branch, which now also has to produce a chip).
+
+---
+
 ## Routes
 
 | Path | What it is |
@@ -212,6 +305,7 @@ value data task on the list.**
 | `xud-address` | The saved address. Its presence is what makes `/` redirect to `/officials` and reveals "My Officials" in the drawer. |
 | `xud-save-declined` | User said "Not now" to the save prompt; don't ask again. |
 | `xud-theme` | `light` (default) or `dark`. Applied pre-paint by an inline script in `layout.js` to avoid a flash. |
+| `xud-collapsed` | JSON array of folded subheading ids on `/officials`, currently `congress` and `executive`. Absent means everything is open. |
 
 ## Conventions
 
@@ -291,6 +385,9 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
 
 ## Next moves
 
+**Finish the September 2026 election push first.** See that section above for
+the four open items, the largest being the 43 missing early-voting states.
+
 **Fix before November 2026 (not optional):**
 1. Restructure elections to be multi-cycle instead of `GENERAL_2026` +
    `PRIMARIES_2026`. A flat, dated list keyed by state that simply filters to
@@ -299,6 +396,16 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
 3. Re-verify all 50 governors against NGA the week after the election.
 
 **Product:**
+3a. **Sample ballots.** Google's Civic Information API still serves
+    `voterInfoQuery` (free, 25,000 queries/day) and returns the real contests
+    and candidates on a ballot by address. The Representatives API turndown in
+    April 2025 did not touch Elections. Parked deliberately during the election
+    push: it needs a new API key and a live dependency, and Voting Information
+    Project ballot coverage is patchy and often populates only days before an
+    election, which is a credibility risk on a nonpartisan site. Build the
+    honest empty state before the happy path.
+3b. **Simplified view.** A toggle that shows the cards alone, without the ledes
+    and explainers, for readers who just want the names and numbers.
 4. **Local officials.** The most-requested missing layer and the hardest data
    problem, because there is no national feed for ~19,000 municipalities. The
    realistic path is top-N cities by population, hand-curated, expanding over

@@ -35,6 +35,12 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* The election bar jumps down to the Elections section. Honour a reader who has
+   asked the OS for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 ::selection { background: rgba(90, 140, 220, 0.3); }
 
 body {
@@ -290,15 +296,61 @@ a { color: var(--blue); }
 .matched-address { color: var(--muted); font-size: 0.92rem; margin: 0; }
 .matched-address strong { color: var(--text); }
 
-.page-note {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
-  border-left: 3px solid var(--border);
-  padding-left: 14px;
-  margin-bottom: 8px;
+/* The election bar: the deadline facts, at the top where they get read. Shown
+   only inside 90 days of an election, so out of season there is nothing here.
+   Each chip jumps to the Elections section; the action beside it does the
+   thing directly, so the scroll is never the only way through. */
+.election-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
 }
-.page-note strong { color: var(--text); }
+.election-chip {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--red) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+}
+.chip-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.chip-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chip-fact { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.chip-main:hover .chip-fact { color: var(--blue); }
+.chip-sub { font-size: 0.82rem; color: var(--muted); }
+.chip-action {
+  margin-top: 10px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--blue);
+  text-decoration: none;
+  cursor: pointer;
+}
+.chip-action:hover { text-decoration: underline; }
 
 /* Save-this-address offer, shown once after a successful lookup. */
 .save-prompt {
@@ -374,9 +426,11 @@ a { color: var(--blue); }
 .major-title:hover { color: var(--blue); }
 
 /* The triangle on Federal, State, and Elections. Points right when closed and
-   down when open. Those three are the only places it belongs: the dropdowns
-   inside the national block carry a count pill, which signals "there is more
-   here" well enough on its own, and an arrow next to it was just noise. */
+   down when open. Those three are the only places it belongs. Everything that
+   folds below them, the Congress and Executive subheadings and the dropdowns
+   inside the national block, carries a count pill instead, which signals "there
+   is more here" well enough on its own. Stacking arrows under arrows was tried
+   and it was just noise. */
 .caret {
   width: 0;
   height: 0;
@@ -389,9 +443,9 @@ a { color: var(--blue); }
 }
 details[open] > summary .caret { transform: rotate(90deg); }
 
-/* One step down from a major title: Congress, Executive, and the Elections
-   action blocks. A plain heading, never a summary. These do not collapse; see
-   the note on SubTitle in app/officials/page.js. */
+/* One step down from a major title: Congress and Executive, which fold, and the
+   Elections action blocks, which do not. Same type either way, so folding a
+   section changes what it does and never how it reads. */
 .sub-title {
   font-size: 1.22rem;
   font-weight: 700;
@@ -401,7 +455,21 @@ details[open] > summary .caret { transform: rotate(90deg); }
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
-.major-body > .sub-title:first-child { margin-top: 0; }
+.major-body > .sub-title:first-child,
+.major-body > .sub-section:first-child > .sub-title { margin-top: 0; }
+
+/* Congress and Executive. The pill is the whole affordance, so the summary has
+   to look like the heading it replaces and carry no marker of its own. */
+.sub-title-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+.sub-title-toggle::-webkit-details-marker { display: none; }
+.sub-title-toggle:hover { color: var(--blue); }
+.sub-title-toggle .national-count { font-size: 0.78rem; }
 .sub-lede {
   color: var(--muted);
   font-size: 0.9rem;
@@ -772,6 +840,9 @@ details[open] > summary .caret { transform: rotate(90deg); }
 .deadline-box h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .deadline-box p { color: var(--muted); font-size: 0.92rem; margin: 0; }
 .deadline-pointer { margin-top: 8px !important; font-size: 0.85rem !important; opacity: 0.85; }
+/* Early voting sits between the deadline and the link, because someone who is
+   already registered still needs to know the polls are open. */
+.deadline-voting { margin-top: 8px !important; font-weight: 600; color: var(--text) !important; }
 
 /* One action per block, each with a line explaining what it does. The heading
    is a .sub-title, so it deliberately carries no size or weight of its own
@@ -907,4 +978,5 @@ details[open] > summary .caret { transform: rotate(90deg); }
   .rep-avatar { width: 104px; height: 104px; }
   .rep-meta, .rep-actions { justify-content: center; }
   .save-prompt { flex-direction: column; align-items: flex-start; }
+  .election-bar { flex-direction: column; }
 }
