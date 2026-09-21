@@ -296,71 +296,64 @@ a { color: var(--blue); }
 .matched-address { color: var(--muted); font-size: 0.92rem; margin: 0; }
 .matched-address strong { color: var(--text); }
 
-/* The election banner: the next election at the top of /officials, where it gets
-   read. The smaller sibling of .election-card further down, same shape (count on
-   the left, details on the right) at a lighter weight, in red because it is the
-   urgent one. Shown only inside 90 days of an election, so out of season there
-   is nothing here. */
-.election-banner {
+/* The election alerts: three cards at the top of /officials, where they get read.
+   Early voting and where to vote, registration, and the election itself. Each
+   card is the at-a-glance version with a direct link; clicking the card jumps to
+   Elections, which repeats the same facts with more depth. Red because these are
+   the urgent ones. Shown only inside 90 days of an election, so out of season
+   there is nothing here. */
+.election-alerts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.alert-card {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-direction: column;
   align-items: flex-start;
   background: color-mix(in srgb, var(--red) 6%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
   border-radius: var(--radius-card);
-  padding: 16px 18px;
-  margin-bottom: 24px;
+  padding: 14px 16px;
+  transition: border-color 0.15s;
 }
-.banner-count {
-  background: var(--red);
-  color: #fff;
-  border-radius: 12px;
-  padding: 12px 14px;
-  min-width: 78px;
-  text-align: center;
-  line-height: 1.15;
-  flex-shrink: 0;
+.alert-card:hover { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
+.alert-main {
   display: flex;
   flex-direction: column;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  gap: 2px;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.banner-count-num { font-size: 1.6rem; font-weight: 800; }
-.banner-info { flex: 1 1 240px; min-width: 0; }
-.banner-info h2 { margin: 0 0 2px; font-size: 1.05rem; color: var(--text); }
-.banner-date { margin: 0 0 10px; font-size: 0.9rem; font-weight: 600; color: var(--text); }
-.banner-facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 14px;
-  margin: 0 0 12px;
-  font-size: 0.9rem;
-}
-.banner-facts dt {
+.alert-label {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
-  align-self: center;
 }
-.banner-facts dd { margin: 0; color: var(--text); font-weight: 600; }
-.banner-actions { display: flex; flex-wrap: wrap; gap: 6px 18px; }
-.banner-actions a,
-.banner-actions button {
+.alert-fact { font-size: 1.2rem; font-weight: 800; color: var(--text); line-height: 1.25; }
+.alert-main:hover .alert-fact { color: var(--blue); }
+.alert-sub { font-size: 0.84rem; color: var(--muted); }
+.alert-action {
+  margin-top: 10px;
   padding: 0;
   background: none;
   border: 0;
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--blue);
   text-decoration: none;
   cursor: pointer;
 }
-.banner-actions a:hover,
-.banner-actions button:hover { text-decoration: underline; }
+.alert-action:hover { text-decoration: underline; }
 
 /* Save-this-address offer, shown once after a successful lookup. */
 .save-prompt {
@@ -989,8 +982,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
   .rep-avatar { width: 104px; height: 104px; }
   .rep-meta, .rep-actions { justify-content: center; }
   .save-prompt { flex-direction: column; align-items: flex-start; }
-  .election-banner { flex-direction: column; }
-  /* In a column, flex-basis is a height, so drop the 240px that sizes the row layout. */
-  .banner-info { flex: 0 0 auto; width: 100%; }
-  .banner-count { flex-direction: row; align-items: baseline; justify-content: center; gap: 8px; width: 100%; }
 }
+
+/* The alert cards' facts, repeated in the Elections deadline box in the same
+   words, so a reader who scrolls down finds what they clicked. */
+.deadline-facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0 0 10px; font-size: 0.92rem; }
+.deadline-facts dt { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); align-self: center; }
+.deadline-facts dd { margin: 0; font-weight: 700; color: var(--text); }

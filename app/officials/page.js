@@ -80,71 +80,106 @@ function jumpTo(id) {
   });
 }
 
-// A chip is a { fact, sub } pair built for a tight space. Here there is room
-// for a line, so join them into one.
-function lowerFirst(text) {
-  return text.charAt(0).toLowerCase() + text.slice(1);
+// The words on the alert cards, worked out once. The cards at the top and the
+// deadline box in Elections both read from this, so the labels and facts a
+// reader sees in one place are literally the ones they find in the other.
+function alertText(deadline, votingWindow) {
+  return {
+    early: votingWindow && {
+      label: 'Early voting',
+      fact: votingWindow.chip.fact,
+      sub: votingWindow.chip.sub
+    },
+    registration: deadline && {
+      // Only a real cutoff date can be said to "close". Same-day and
+      // no-registration states carry a phrase instead of a date.
+      label: deadline.deadlineDate ? 'Registration closes' : 'Registration',
+      fact: deadline.chip.fact,
+      sub: deadline.chip.sub
+    }
+  };
 }
 
-function registrationLine(deadline) {
-  const { fact, sub } = deadline.chip;
-  // Only a real cutoff date can be said to "close". Same-day and no-registration
-  // states carry a phrase instead of a date, so they read as one.
-  if (!deadline.deadlineDate) return `${fact}, ${lowerFirst(sub)}`;
-  return deadline.daysLeft > 0 ? `Closes ${fact}, ${sub}` : `Closed ${fact}`;
+// One alert card. The body is a button that jumps down to the Elections section,
+// where the same fact is repeated with more depth. The link under it does the
+// thing directly, so what a reader came to do never depends on the scroll. They
+// are siblings rather than nested because a link inside a button is invalid and
+// unreliable for keyboards and screen readers.
+function AlertCard({ label, fact, sub, jump, action }) {
+  return (
+    <div className="alert-card">
+      <button className="alert-main" onClick={() => jumpTo(jump)}>
+        <span className="alert-label">{label}</span>
+        <span className="alert-fact">{fact}</span>
+        {sub && <span className="alert-sub">{sub}</span>}
+      </button>
+      {action}
+    </div>
+  );
 }
 
-// The next election, at the top where it gets read: what it is, how far off, and
-// the three things a reader might do about it. It is the smaller sibling of the
-// Elections card further down, with the same countdown-on-the-left shape, so the
-// two read as one idea. The red outline stays because this is the urgent one.
-// Elections itself stays at the bottom, where there is room for the full list,
-// the explanation and the calendar feeds.
-function ElectionBanner({ election, deadline, votingWindow, registrationUrl, pollingPlaceUrl }) {
+// The three things a reader with an election coming up wants at a glance, at the
+// top where they get read: whether they can vote early and where, whether they
+// can still register, and how far off the election is. Each card carries a direct
+// link and jumps to Elections, which repeats the same facts and the same link
+// wording with the added depth. Keep the two in step: the labels and links below
+// are the ones the Elections section uses.
+function ElectionAlerts({ election, text, registrationUrl, pollingPlaceUrl }) {
   // Time-bound on purpose. Out of season this is noise, so it simply is not
   // there. 90 days is about when a general election starts having deadlines a
   // reader can actually act on.
   if (!election || election.daysUntil > 90) return null;
 
+  const dayLabel = new Date(election.date + 'T00:00:00').toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric'
+  });
   const today = election.daysUntil === 0;
 
   return (
-    <div className="election-banner" role="region" aria-label="Your next election">
-      <div className="banner-count">
-        <span className="banner-count-num">{today ? 'Today' : election.daysUntil}</span>
-        {!today && <span>{election.daysUntil === 1 ? 'day away' : 'days away'}</span>}
-      </div>
-      <div className="banner-info">
-        <h2>{election.name}</h2>
-        <p className="banner-date">{longDate(election.date)}</p>
+    <div className="election-alerts" role="region" aria-label="Your next election">
+      {text.early && (
+        <AlertCard
+          label={text.early.label}
+          fact={text.early.fact}
+          sub={text.early.sub}
+          jump="election-deadlines"
+          action={
+            <a className="alert-action" href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+              Find my polling place →
+            </a>
+          }
+        />
+      )}
 
-        {(votingWindow || deadline) && (
-          <dl className="banner-facts">
-            {votingWindow && (
-              <>
-                <dt>Early voting</dt>
-                <dd>{`${votingWindow.chip.fact}, ${votingWindow.chip.sub}`}</dd>
-              </>
-            )}
-            {deadline && (
-              <>
-                <dt>Registration</dt>
-                <dd>{registrationLine(deadline)}</dd>
-              </>
-            )}
-          </dl>
-        )}
+      {text.registration && (
+        <AlertCard
+          label={text.registration.label}
+          fact={text.registration.fact}
+          sub={text.registration.sub}
+          jump="election-deadlines"
+          action={
+            <a className="alert-action" href={registrationUrl} target="_blank" rel="noopener noreferrer">
+              Check or register to vote →
+            </a>
+          }
+        />
+      )}
 
-        <div className="banner-actions">
-          <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-            Check or register to vote →
-          </a>
-          <a href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
-            Find my polling place →
-          </a>
-          <button onClick={() => jumpTo('election-calendars')}>Add to my calendar →</button>
-        </div>
-      </div>
+      <AlertCard
+        label="Election Day"
+        fact={
+          today ? 'Today' : `${election.daysUntil} ${election.daysUntil === 1 ? 'day' : 'days'} away`
+        }
+        sub={dayLabel}
+        jump="elections"
+        action={
+          <button className="alert-action" onClick={() => jumpTo('election-calendars')}>
+            Add to my calendar →
+          </button>
+        }
+      />
     </div>
   );
 }
@@ -490,10 +525,9 @@ export default function Officials() {
           </p>
         </header>
 
-        <ElectionBanner
+        <ElectionAlerts
           election={elections[0]}
-          deadline={registrationDeadline}
-          votingWindow={votingWindow}
+          text={alertText(registrationDeadline, votingWindow)}
           registrationUrl={registrationUrl}
           pollingPlaceUrl={pollingPlaceUrl}
         />
@@ -587,13 +621,33 @@ export default function Officials() {
           lede="A general election fills the seat: every voter picks among the candidates on the ballot. A primary comes earlier and decides who those candidates are. Far fewer people vote in primaries, so each ballot counts for more. Here is what is next where you live."
         >
           {registrationDeadline && (
-            <div className="deadline-box">
+            <div className="deadline-box" id="election-deadlines">
+              {(() => {
+                const t = alertText(registrationDeadline, votingWindow);
+                return (
+                  <dl className="deadline-facts">
+                    {t.early && (
+                      <>
+                        <dt>{t.early.label}</dt>
+                        <dd>{`${t.early.fact}, ${t.early.sub}`}</dd>
+                      </>
+                    )}
+                    <dt>{t.registration.label}</dt>
+                    <dd>{`${t.registration.fact}, ${t.registration.sub}`}</dd>
+                  </dl>
+                );
+              })()}
               <h3>{registrationDeadline.headline}</h3>
               <p>{registrationDeadline.detail}</p>
               {votingWindow && <p className="deadline-voting">{votingWindow.headline}</p>}
               <p className="deadline-pointer">
                 <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-                  Check or register to vote at vote.gov →
+                  Check or register to vote →
+                </a>
+              </p>
+              <p className="deadline-pointer">
+                <a href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+                  Find my polling place →
                 </a>
               </p>
             </div>
@@ -662,7 +716,7 @@ export default function Officials() {
 
         <p className="feedback-note">
           Something looks off? Wrong rep, bad date, missing info?{' '}
-          <a href="mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%3A%20something%20looks%20off">
+          <a href="mailto:hello@xusall.com?subject=XUsDemocracy%3A%20something%20looks%20off">
             Let us know
           </a>{' '}
           and we&apos;ll fix it.

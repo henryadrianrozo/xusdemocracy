@@ -2,9 +2,9 @@
 
 <!-- STATUS:BEGIN -->
 **Updated:** 2026-09-21 · `e84b3cb`  
-**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, a one-card election banner at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
-**Last shipped:** The three-chip election bar became one horizontal banner (countdown left, details and links right). New `lib/pollingplace.js` links each state's own polling place lookup, from the banner, the Elections section and all 52 state pages. One register verb everywhere: "Check or register to vote". Section intros are full width and about three lines.  
-**Missing:** 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The banner was seen live on desktop only; 375px and dark were checked as static HTML in headless Chrome.  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, three election alert cards at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
+**Last shipped:** The one-card banner became three alert cards (early voting and polling place, registration, election day), each with a direct link; clicking a card scrolls to Elections, which repeats the same labels, facts and link wording. "Let us know" now mails hello@xusall.com on `/officials` and the state pages.  
+**Missing:** The old address xusalldevelopment@gmail.com is still in `lib/site.js` (`CONTACT_EMAIL`, feeding the structured data), `/calendars`, `/why` and `llms.txt`. Change them together when Adrian confirms hello@xusall.com replaces it. 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The banner was seen live on desktop only; 375px and dark were checked as static HTML in headless Chrome.  
 **Blocked:** Nothing on our side.  
 **Next:** Adrian clicks the NM and OK polling links, and the other unconfirmed ones when convenient. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
 <!-- STATUS:END -->
@@ -170,14 +170,19 @@ early-voting, absentee, or mail data anywhere in the repo.
    status of `open` / `upcoming` / `closed` / `excuse-required`, plus a
    sentence for the deadline box and a `chip` for the election bar. Wired
    through `/api/lookup` as `votingWindow`.
-2. **The election banner** at the top of `/officials`. It began as three chips
-   (early voting, registration cutoff, Election Day) and became one horizontal
-   card on 2026-09-21: the countdown on the left, the election name, date, early
-   voting and registration lines on the right, then three links (check or
-   register to vote, find my polling place, add to my calendar). It is the
-   smaller sibling of the blue Elections card, in red because it is the urgent
-   one. Renders only inside 90 days of an election, so it disappears out of
-   season instead of going stale.
+2. **The election alert cards** at the top of `/officials`. They began as three
+   chips, became one banner for a few hours on 2026-09-21, and settled on three
+   cards: Early voting (link: Find my polling place), Registration closes (link:
+   Check or register to vote), Election Day (link: Add to my calendar). They are
+   the at-a-glance alerts, red because they are urgent. Clicking a card runs
+   `jumpTo()`, which opens the Elections section and scrolls to it: the two
+   voting cards go to the deadline box (`#election-deadlines`), the Election Day
+   card to the top of the section. **Keep the wording in step.** `alertText()` in
+   `app/officials/page.js` builds the labels and facts once, and both the cards
+   and the deadline box read from it; the link labels are the same strings in the
+   cards, the deadline box, the Register and Find Where to Vote block and the state
+   pages. Change a label in one place and change it in all of them. Renders only
+   inside 90 days of an election, so it disappears out of season.
 3. **Congress and Executive now fold**, remembered in `xud-collapsed`. See the
    note below, this reverses an earlier decision on purpose.
 4. **The deadline box is now a link**, not a pointer to one, matching what
@@ -229,7 +234,10 @@ than a change to `.sub-title` itself.
 
 3. **The calendar scroll works.** Confirmed live on 2026-09-21: "Add to my
    calendar" opens the Elections section and lands on the Election Calendars
-   block. `jumpTo()` now serves only that link.
+   block. The card clicks use the same `jumpTo()`; card 1 was confirmed landing
+   on the deadline box, card 3 could not be watched to the end because the
+   automated tab was in the background, where `requestAnimationFrame` never
+   fires. Tap the Election Day card once by hand.
 4. **Not checked in the live app:** dark theme, the 375px layout (both checked
    only as static HTML in headless Chrome), and the banner for states other
    than Virginia. The API output was

@@ -191,7 +191,7 @@ export default async function StatePage({ params }) {
             <p>{deadline.detail}</p>
             <p className="deadline-pointer">
               <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-                Check or register to vote at vote.gov →
+                Check or register to vote →
               </a>
             </p>
             <p className="deadline-pointer">
@@ -330,7 +330,7 @@ export default async function StatePage({ params }) {
           </strong>{' '}
           before you rely on a date. Spot an error?{' '}
           <a
-            href={`mailto:xusalldevelopment@gmail.com?subject=XUsDemocracy%3A%20${encodeURIComponent(name)}`}
+            href={`mailto:hello@xusall.com?subject=XUsDemocracy%3A%20${encodeURIComponent(name)}`}
           >
             Let us know
           </a>{' '}
