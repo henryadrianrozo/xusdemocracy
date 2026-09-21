@@ -1,7 +1,7 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-21 · `e84b3cb`  
+**Updated:** 2026-09-21 · `8c1e904`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, three election alert cards at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
 **Last shipped:** The alert cards are now three stacked horizontal cards like the election card, a blue countdown badge on the left and the fact and link on the right, in date order. Elections lost its red deadline box: registration and early voting each sit in a plain block with one link ("Register to Vote", "Where and When to Vote"), and clicking a card lands on its block.  
 **Missing:** The old address xusalldevelopment@gmail.com is still in `lib/site.js` (`CONTACT_EMAIL`, feeding the structured data), `/calendars`, `/why` and `llms.txt`. Change them together when Adrian confirms hello@xusall.com replaces it. 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The new cards were checked on localhost at desktop, 375px and dark (TX and VA); card clicks scrolling to their blocks still need one tap by hand, since the automated tab never runs animation frames.  
