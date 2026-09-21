@@ -92,7 +92,7 @@ function plural(n, one, many) {
   return n === 1 ? one : many;
 }
 
-// What goes in the blue block on the left of an alert card. A number wherever
+// What goes in the blue block of a countdown card. A number wherever
 // there is a date to count toward, since that is what a reader takes in at a
 // glance. States with no date to count (same-day registration, early voting that
 // needs an excuse) get a short word instead, marked `word` so it sets smaller.
@@ -116,26 +116,37 @@ function registrationBadge(d) {
   return { big: d.daysLeft, small: plural(d.daysLeft, 'day left', 'days left') };
 }
 
-// One alert card: a compact election card, the key number on the left and the
-// fact on the right. The body is a button that jumps down to the matching block
-// in Elections, where the same thing is said in full. The link under it does the
-// thing directly, so what a reader came to do never depends on the scroll. They
-// are siblings rather than nested because a link inside a button is invalid and
-// unreliable for keyboards and screen readers.
-function AlertCard({ badge, label, fact, sub, jump, action }) {
+// One alert card. The body is a button that jumps down to the matching block in
+// Elections, where the same thing is said in full with its countdown. The link
+// under it does the thing directly, so what a reader came to do never depends on
+// the scroll. They are siblings rather than nested because a link inside a
+// button is invalid and unreliable for keyboards and screen readers.
+function AlertCard({ label, fact, sub, jump, action }) {
   return (
     <div className="alert-card">
-      <span className={`alert-badge${badge.word ? ' alert-badge-word' : ''}`} aria-hidden="true">
-        <span className="alert-badge-big">{badge.big}</span>
+      <button className="alert-main" onClick={() => jumpTo(jump)}>
+        <span className="alert-label">{label}</span>
+        <span className="alert-fact">{fact}</span>
+        {sub && <span className="alert-sub">{sub}</span>}
+      </button>
+      {action}
+    </div>
+  );
+}
+
+// The countdown card in the Register and Where and When blocks: the election
+// card's blue block on the left, the full sentence on the right, so the number a
+// reader saw at the top is waiting for them when they land here.
+function CountdownCard({ badge, headline, detail }) {
+  return (
+    <div className="election-card countdown-card">
+      <div className={`election-date${badge.word ? ' election-date-word' : ''}`}>
+        <span className="election-day-count">{badge.big}</span>
         {badge.small && <span>{badge.small}</span>}
-      </span>
-      <div className="alert-body">
-        <button className="alert-main" onClick={() => jumpTo(jump)}>
-          <span className="alert-label">{label}</span>
-          <span className="alert-fact">{fact}</span>
-          {sub && <span className="alert-sub">{sub}</span>}
-        </button>
-        {action}
+      </div>
+      <div className="election-info">
+        <h3>{headline}</h3>
+        <p className="election-desc">{detail}</p>
       </div>
     </div>
   );
@@ -162,7 +173,6 @@ function ElectionAlerts({ election, deadline, votingWindow, registrationUrl, pol
 
   const early = votingWindow && (
     <AlertCard
-      badge={earlyBadge(votingWindow)}
       label="Early voting"
       fact={votingWindow.chip.fact}
       sub={votingWindow.chip.sub}
@@ -176,13 +186,11 @@ function ElectionAlerts({ election, deadline, votingWindow, registrationUrl, pol
   );
   const reg = deadline && (
     <AlertCard
-      badge={registrationBadge(deadline)}
       // Only a real cutoff date can be said to "close". Same-day and
-      // no-registration states carry a phrase instead of a date, and the
-      // days-left count already sits in the badge.
+      // no-registration states carry a phrase instead of a date.
       label={deadline.deadlineDate ? 'Registration closes' : 'Registration'}
       fact={deadline.chip.fact}
-      sub={deadline.deadlineDate ? null : deadline.chip.sub}
+      sub={deadline.chip.sub}
       jump="election-register"
       action={
         <a className="alert-action" href={registrationUrl} target="_blank" rel="noopener noreferrer">
@@ -201,13 +209,11 @@ function ElectionAlerts({ election, deadline, votingWindow, registrationUrl, pol
       {!earlyFirst && early}
 
       <AlertCard
-        badge={
-          today
-            ? { big: 'Today', word: true }
-            : { big: election.daysUntil, small: plural(election.daysUntil, 'day away', 'days away') }
-        }
         label="Election Day"
-        fact={dayLabel}
+        fact={
+          today ? 'Today' : `${election.daysUntil} ${plural(election.daysUntil, 'day', 'days')} away`
+        }
+        sub={dayLabel}
         jump="elections"
         action={
           <button className="alert-action" onClick={() => jumpTo('election-calendars')}>
@@ -674,9 +680,11 @@ export default function Officials() {
           <div className="action-block" id="election-register">
             <SubTitle>Register to Vote</SubTitle>
             {registrationDeadline && (
-              <p className="action-lead">
-                <strong>{registrationDeadline.headline}</strong> {registrationDeadline.detail}
-              </p>
+              <CountdownCard
+                badge={registrationBadge(registrationDeadline)}
+                headline={registrationDeadline.headline}
+                detail={registrationDeadline.detail}
+              />
             )}
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
@@ -693,9 +701,11 @@ export default function Officials() {
           <div className="action-block" id="election-early">
             <SubTitle>Where and When to Vote</SubTitle>
             {votingWindow && (
-              <p className="action-lead">
-                <strong>{votingWindow.headline}</strong> {votingWindow.detail}
-              </p>
+              <CountdownCard
+                badge={earlyBadge(votingWindow)}
+                headline={votingWindow.headline}
+                detail={votingWindow.detail}
+              />
             )}
             <p>
               The polling place link goes to {stateFullName}&apos;s own lookup, where you enter

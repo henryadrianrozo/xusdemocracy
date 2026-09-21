@@ -3,8 +3,8 @@
 <!-- STATUS:BEGIN -->
 **Updated:** 2026-09-21 · `8c1e904`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, three election alert cards at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
-**Last shipped:** The alert cards are now three stacked horizontal cards like the election card, a blue countdown badge on the left and the fact and link on the right, in date order. Elections lost its red deadline box: registration and early voting each sit in a plain block with one link ("Register to Vote", "Where and When to Vote"), and clicking a card lands on its block.  
-**Missing:** The old address xusalldevelopment@gmail.com is still in `lib/site.js` (`CONTACT_EMAIL`, feeding the structured data), `/calendars`, `/why` and `llms.txt`. Change them together when Adrian confirms hello@xusall.com replaces it. 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The new cards were checked on localhost at desktop, 375px and dark (TX and VA); card clicks scrolling to their blocks still need one tap by hand, since the automated tab never runs animation frames.  
+**Last shipped:** The top cards are the red alert cards again, with larger titles and in date order; each links directly and jumps to its block in Elections. Elections lost its red deadline box: "Register to Vote" and "Where and When to Vote" each open with a blue countdown card (days left to register, days until early voting opens) and one link. Stacked election cards no longer leave a gap on phones.  
+**Missing:** The old address xusalldevelopment@gmail.com is still in `lib/site.js` (`CONTACT_EMAIL`, feeding the structured data), `/calendars`, `/why` and `llms.txt`. Change them together when Adrian confirms hello@xusall.com replaces it. 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The cards were checked on localhost at desktop and phone width (TX) and dark (VA); card clicks scrolling to their blocks still need one tap by hand, since the automated tab never runs animation frames.  
 **Blocked:** Nothing on our side.  
 **Next:** Adrian clicks the NM and OK polling links, and the other unconfirmed ones when convenient. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
 <!-- STATUS:END -->
@@ -171,25 +171,24 @@ early-voting, absentee, or mail data anywhere in the repo.
    sentence for the deadline box and a `chip` for the election bar. Wired
    through `/api/lookup` as `votingWindow`.
 2. **The election alert cards** at the top of `/officials`. They began as three
-   chips, became one banner, then three side-by-side red cards, and settled
-   (2026-09-21) on three stacked horizontal cards in the election card idiom: a
-   blue badge on the left with the number that matters (days left to register,
-   days until early voting opens or closes, days until Election Day) and the fact
-   and a direct link on the right. States with no date to count get a short word
-   in the badge (`earlyBadge()` and `registrationBadge()` in
-   `app/officials/page.js`). Registration leads unless early voting is already
-   open, so the cards read in date order. Clicking a card runs `jumpTo()`, which
-   opens Elections and scrolls to the matching block: early voting to
-   `#election-early`, registration to `#election-register`, Election Day to the
-   top of the section. **Keep the link labels in step:** the same strings appear
-   on the cards, in those Elections blocks and on the state pages. Renders only
-   inside 90 days of an election, so it disappears out of season.
+   chips, became one banner, then three red cards; on 2026-09-21 they were tried
+   as stacked horizontal cards with a blue badge and Adrian took them back to the
+   red cards, with the titles made full-size (`.alert-label`). They are small and
+   side by side on desktop, stacked on a phone, in date order: registration
+   leads unless early voting is already open. Each carries a direct link, and
+   clicking a card runs `jumpTo()`, which opens Elections and scrolls to the
+   matching block: registration to `#election-register`, early voting to
+   `#election-early`, Election Day to the top of the section. **Keep the link
+   labels in step:** the same strings appear on the cards, in those Elections
+   blocks and on the state pages. Renders only inside 90 days of an election, so
+   it disappears out of season.
 3. **Congress and Executive now fold**, remembered in `xud-collapsed`. See the
    note below, this reverses an earlier decision on purpose.
-4. **Elections has no red box any more.** The registration and early-voting
-   sentences sit in two plain action blocks, "Register to Vote" and "Where and
-   When to Vote", each with its one link, in the same idiom as Election
-   Calendars. A red box holding a facts grid plus both links, repeated again just
+4. **Elections has no red box any more.** Registration and early voting each
+   lead a plain action block, "Register to Vote" and "Where and When to Vote",
+   with a `CountdownCard`: the election card's blue block holding the days left
+   (`registrationBadge()`, `earlyBadge()`, a short word where there is no date to
+   count) and the full sentence beside it, then one link. A red box holding a facts grid plus both links, repeated again just
    below, was tried on 2026-09-21 and read as a jumble. The state pages still use
    `.deadline-box`.
 5. **The Elections lede explains general elections**, not just primaries. The

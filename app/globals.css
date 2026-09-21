@@ -297,52 +297,32 @@ a { color: var(--blue); }
 .matched-address strong { color: var(--text); }
 
 /* The election alerts: three cards at the top of /officials, where they get read.
-   Each is a compact election card, the key number in a blue block on the left and
-   the fact on the right, so the top of the page and the Elections section read as
-   one family. Clicking a card jumps to the block in Elections that says the same
-   thing in full. Shown only inside 90 days of an election, so out of season there
+   Registration, early voting and the election itself, in date order. Each is the
+   at-a-glance version with a direct link; clicking the card jumps to the block in
+   Elections that says it in full, with the countdown. Red because these are the
+   urgent ones. Shown only inside 90 days of an election, so out of season there
    is nothing here. */
 .election-alerts {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
   margin-bottom: 24px;
 }
 .alert-card {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px 16px 12px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--red) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
   transition: border-color 0.15s;
 }
-.alert-card:hover { border-color: color-mix(in srgb, var(--blue) 45%, var(--border)); }
-.alert-badge {
-  flex-shrink: 0;
-  width: 76px;
-  min-height: 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--blue);
-  color: #fff;
-  border-radius: 12px;
-  padding: 8px 6px;
-  text-align: center;
-  font-size: 0.68rem;
-  letter-spacing: 0.03em;
-  line-height: 1.15;
-}
-.alert-badge-big { font-size: 1.6rem; font-weight: 800; letter-spacing: 0; }
-.alert-badge-word .alert-badge-big { font-size: 0.95rem; }
-.alert-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.alert-card:hover { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
 .alert-main {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   width: 100%;
   background: none;
   border: 0;
@@ -351,18 +331,14 @@ a { color: var(--blue); }
   text-align: left;
   cursor: pointer;
 }
-.alert-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.alert-fact { font-size: 1.05rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+/* The title is what a reader scans for, so it is full-strength text at a
+   readable size rather than a small muted eyebrow. */
+.alert-label { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.alert-fact { font-size: 1.2rem; font-weight: 800; color: var(--text); line-height: 1.25; }
 .alert-main:hover .alert-fact { color: var(--blue); }
 .alert-sub { font-size: 0.84rem; color: var(--muted); }
 .alert-action {
-  margin-top: 6px;
+  margin-top: 10px;
   padding: 0;
   background: none;
   border: 0;
@@ -724,6 +700,9 @@ details[open] > summary .caret { transform: rotate(90deg); }
   letter-spacing: 0.04em;
 }
 .election-day-count { font-size: 2rem; font-weight: 800; }
+/* A word in place of a count, for states with no date to count toward. */
+.election-date-word { justify-content: center; }
+.election-date-word .election-day-count { font-size: 1.05rem; }
 .election-info { flex: 1 1 240px; }
 .election-info h3 { margin: 0 0 6px; font-size: 1.05rem; color: var(--text); }
 .election-info p { margin: 0 0 8px; font-size: 0.94rem; line-height: 1.55; }
@@ -877,10 +856,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
   margin-bottom: 14px;
   max-width: 60ch;
 }
-/* The fact a block is about, ahead of its explainer: the registration cutoff,
-   or where early voting stands. The lead sentence is bold, the rest plain. */
-.action-block p.action-lead { color: var(--text); font-size: 0.95rem; }
-.action-lead strong { font-weight: 700; }
+/* The countdown card leading the Register and Where and When blocks. Its
+   paragraph must not pick up the muted, 60ch explainer style of .action-block p. */
+.countdown-card { margin-bottom: 14px; }
+.action-block .countdown-card p { max-width: none; margin-bottom: 0; }
 .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
 .cta-link {
   display: inline-block;
@@ -998,6 +977,8 @@ details[open] > summary .caret { transform: rotate(90deg); }
 @media (max-width: 540px) {
   .hero { padding-top: 48px; }
   .election-card { flex-direction: column; }
+  /* Stacked, the 240px basis would become a 240px height and leave a gap. */
+  .election-info { flex-basis: auto; }
   /* Stack the card and center the portrait so it leads. */
   .rep-card { flex-direction: column; align-items: center; text-align: center; }
   .rep-avatar { width: 104px; height: 104px; }
