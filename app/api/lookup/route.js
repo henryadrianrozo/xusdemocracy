@@ -63,8 +63,8 @@ export async function POST(request) {
     let stateLegsPromise = Promise.resolve(prefetchedStateLegs);
     if (!prefetchedStateLegs && geocodioEnabled()) {
       stateLegsPromise = hasCoords
-        ? getStateLegislatorsByCoords(lat, lon)
-        : getStateLegislators(address);
+        ? getStateLegislatorsByCoords(lat, lon, geo.state)
+        : getStateLegislators(address, geo.state);
     }
 
     const [federal, stateLegs] = await Promise.all([
