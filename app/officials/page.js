@@ -80,40 +80,63 @@ function jumpTo(id) {
   });
 }
 
-// The words on the alert cards, worked out once. The cards at the top and the
-// deadline box in Elections both read from this, so the labels and facts a
-// reader sees in one place are literally the ones they find in the other.
-function alertText(deadline, votingWindow) {
-  return {
-    early: votingWindow && {
-      label: 'Early voting',
-      fact: votingWindow.chip.fact,
-      sub: votingWindow.chip.sub
-    },
-    registration: deadline && {
-      // Only a real cutoff date can be said to "close". Same-day and
-      // no-registration states carry a phrase instead of a date.
-      label: deadline.deadlineDate ? 'Registration closes' : 'Registration',
-      fact: deadline.chip.fact,
-      sub: deadline.chip.sub
-    }
-  };
+// Whole days from today to an ISO date, counted from midnight so the number does
+// not tick down partway through the day.
+function daysFrom(iso) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((new Date(iso + 'T00:00:00') - today) / 86400000);
 }
 
-// One alert card. The body is a button that jumps down to the Elections section,
-// where the same fact is repeated with more depth. The link under it does the
+function plural(n, one, many) {
+  return n === 1 ? one : many;
+}
+
+// What goes in the blue block on the left of an alert card. A number wherever
+// there is a date to count toward, since that is what a reader takes in at a
+// glance. States with no date to count (same-day registration, early voting that
+// needs an excuse) get a short word instead, marked `word` so it sets smaller.
+function earlyBadge(w) {
+  if (w.status === 'open' && w.end) {
+    const n = daysFrom(w.end);
+    return n === 0 ? { big: 'Last', small: 'day' } : { big: n, small: plural(n, 'day left', 'days left') };
+  }
+  if (w.status === 'upcoming' && w.start && w.chip.fact !== 'Opening now') {
+    const n = daysFrom(w.start);
+    return { big: n, small: plural(n, 'day to go', 'days to go') };
+  }
+  const words = { upcoming: 'Now', closed: 'Closed', 'excuse-required': 'Excuse' };
+  return { big: words[w.status] || w.chip.fact, word: true };
+}
+
+function registrationBadge(d) {
+  if (!d.deadlineDate) return { big: d.chip.fact === 'Same day' ? 'Same day' : 'None', word: true };
+  if (d.daysLeft < 0) return { big: 'Closed', word: true };
+  if (d.daysLeft === 0) return { big: 'Today', word: true };
+  return { big: d.daysLeft, small: plural(d.daysLeft, 'day left', 'days left') };
+}
+
+// One alert card: a compact election card, the key number on the left and the
+// fact on the right. The body is a button that jumps down to the matching block
+// in Elections, where the same thing is said in full. The link under it does the
 // thing directly, so what a reader came to do never depends on the scroll. They
 // are siblings rather than nested because a link inside a button is invalid and
 // unreliable for keyboards and screen readers.
-function AlertCard({ label, fact, sub, jump, action }) {
+function AlertCard({ badge, label, fact, sub, jump, action }) {
   return (
     <div className="alert-card">
-      <button className="alert-main" onClick={() => jumpTo(jump)}>
-        <span className="alert-label">{label}</span>
-        <span className="alert-fact">{fact}</span>
-        {sub && <span className="alert-sub">{sub}</span>}
-      </button>
-      {action}
+      <span className={`alert-badge${badge.word ? ' alert-badge-word' : ''}`} aria-hidden="true">
+        <span className="alert-badge-big">{badge.big}</span>
+        {badge.small && <span>{badge.small}</span>}
+      </span>
+      <div className="alert-body">
+        <button className="alert-main" onClick={() => jumpTo(jump)}>
+          <span className="alert-label">{label}</span>
+          <span className="alert-fact">{fact}</span>
+          {sub && <span className="alert-sub">{sub}</span>}
+        </button>
+        {action}
+      </div>
     </div>
   );
 }
@@ -121,10 +144,9 @@ function AlertCard({ label, fact, sub, jump, action }) {
 // The three things a reader with an election coming up wants at a glance, at the
 // top where they get read: whether they can vote early and where, whether they
 // can still register, and how far off the election is. Each card carries a direct
-// link and jumps to Elections, which repeats the same facts and the same link
-// wording with the added depth. Keep the two in step: the labels and links below
-// are the ones the Elections section uses.
-function ElectionAlerts({ election, text, registrationUrl, pollingPlaceUrl }) {
+// link and jumps to the block in Elections that says the same thing in full. The
+// link labels are the ones those blocks and the state pages use; keep them in step.
+function ElectionAlerts({ election, deadline, votingWindow, registrationUrl, pollingPlaceUrl }) {
   // Time-bound on purpose. Out of season this is noise, so it simply is not
   // there. 90 days is about when a general election starts having deadlines a
   // reader can actually act on.
@@ -136,43 +158,56 @@ function ElectionAlerts({ election, text, registrationUrl, pollingPlaceUrl }) {
     day: 'numeric'
   });
   const today = election.daysUntil === 0;
+  const earlyFirst = votingWindow?.status === 'open';
+
+  const early = votingWindow && (
+    <AlertCard
+      badge={earlyBadge(votingWindow)}
+      label="Early voting"
+      fact={votingWindow.chip.fact}
+      sub={votingWindow.chip.sub}
+      jump="election-early"
+      action={
+        <a className="alert-action" href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
+          Find my polling place →
+        </a>
+      }
+    />
+  );
+  const reg = deadline && (
+    <AlertCard
+      badge={registrationBadge(deadline)}
+      // Only a real cutoff date can be said to "close". Same-day and
+      // no-registration states carry a phrase instead of a date, and the
+      // days-left count already sits in the badge.
+      label={deadline.deadlineDate ? 'Registration closes' : 'Registration'}
+      fact={deadline.chip.fact}
+      sub={deadline.deadlineDate ? null : deadline.chip.sub}
+      jump="election-register"
+      action={
+        <a className="alert-action" href={registrationUrl} target="_blank" rel="noopener noreferrer">
+          Check or register to vote →
+        </a>
+      }
+    />
+  );
 
   return (
     <div className="election-alerts" role="region" aria-label="Your next election">
-      {text.early && (
-        <AlertCard
-          label={text.early.label}
-          fact={text.early.fact}
-          sub={text.early.sub}
-          jump="election-deadlines"
-          action={
-            <a className="alert-action" href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
-              Find my polling place →
-            </a>
-          }
-        />
-      )}
-
-      {text.registration && (
-        <AlertCard
-          label={text.registration.label}
-          fact={text.registration.fact}
-          sub={text.registration.sub}
-          jump="election-deadlines"
-          action={
-            <a className="alert-action" href={registrationUrl} target="_blank" rel="noopener noreferrer">
-              Check or register to vote →
-            </a>
-          }
-        />
-      )}
+      {/* In date order. Registration almost always closes before early voting
+          opens, so it leads, unless early voting is already under way. */}
+      {earlyFirst && early}
+      {reg}
+      {!earlyFirst && early}
 
       <AlertCard
-        label="Election Day"
-        fact={
-          today ? 'Today' : `${election.daysUntil} ${election.daysUntil === 1 ? 'day' : 'days'} away`
+        badge={
+          today
+            ? { big: 'Today', word: true }
+            : { big: election.daysUntil, small: plural(election.daysUntil, 'day away', 'days away') }
         }
-        sub={dayLabel}
+        label="Election Day"
+        fact={dayLabel}
         jump="elections"
         action={
           <button className="alert-action" onClick={() => jumpTo('election-calendars')}>
@@ -527,7 +562,8 @@ export default function Officials() {
 
         <ElectionAlerts
           election={elections[0]}
-          text={alertText(registrationDeadline, votingWindow)}
+          deadline={registrationDeadline}
+          votingWindow={votingWindow}
           registrationUrl={registrationUrl}
           pollingPlaceUrl={pollingPlaceUrl}
         />
@@ -620,39 +656,6 @@ export default function Officials() {
           title="Elections"
           lede="A general election fills the seat: every voter picks among the candidates on the ballot. A primary comes earlier and decides who those candidates are. Far fewer people vote in primaries, so each ballot counts for more. Here is what is next where you live."
         >
-          {registrationDeadline && (
-            <div className="deadline-box" id="election-deadlines">
-              {(() => {
-                const t = alertText(registrationDeadline, votingWindow);
-                return (
-                  <dl className="deadline-facts">
-                    {t.early && (
-                      <>
-                        <dt>{t.early.label}</dt>
-                        <dd>{`${t.early.fact}, ${t.early.sub}`}</dd>
-                      </>
-                    )}
-                    <dt>{t.registration.label}</dt>
-                    <dd>{`${t.registration.fact}, ${t.registration.sub}`}</dd>
-                  </dl>
-                );
-              })()}
-              <h3>{registrationDeadline.headline}</h3>
-              <p>{registrationDeadline.detail}</p>
-              {votingWindow && <p className="deadline-voting">{votingWindow.headline}</p>}
-              <p className="deadline-pointer">
-                <a href={registrationUrl} target="_blank" rel="noopener noreferrer">
-                  Check or register to vote →
-                </a>
-              </p>
-              <p className="deadline-pointer">
-                <a href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
-                  Find my polling place →
-                </a>
-              </p>
-            </div>
-          )}
-
           {elections.map((el) => (
             <div className="election-card" key={el.date + el.name}>
               <div className="election-date">
@@ -668,18 +671,37 @@ export default function Officials() {
           ))}
           <p className="election-note">{note}</p>
 
-          <div className="action-block">
-            <SubTitle>Register and Find Where to Vote</SubTitle>
+          <div className="action-block" id="election-register">
+            <SubTitle>Register to Vote</SubTitle>
+            {registrationDeadline && (
+              <p className="action-lead">
+                <strong>{registrationDeadline.headline}</strong> {registrationDeadline.detail}
+              </p>
+            )}
             <p>
               Registrations lapse when you move and sometimes when you sit out a few elections.
               vote.gov is the federal government&apos;s official portal, and it hands you
-              straight to {stateFullName}&apos;s election office. The polling place link goes to
-              that office&apos;s own lookup, where you enter your address.
+              straight to {stateFullName}&apos;s election office.
             </p>
             <div className="cta-row">
               <a className="cta-link" href={registrationUrl} target="_blank" rel="noopener noreferrer">
                 Check or register to vote →
               </a>
+            </div>
+          </div>
+
+          <div className="action-block" id="election-early">
+            <SubTitle>Where and When to Vote</SubTitle>
+            {votingWindow && (
+              <p className="action-lead">
+                <strong>{votingWindow.headline}</strong> {votingWindow.detail}
+              </p>
+            )}
+            <p>
+              The polling place link goes to {stateFullName}&apos;s own lookup, where you enter
+              your address to see where you vote.
+            </p>
+            <div className="cta-row">
               <a className="cta-link" href={pollingPlaceUrl} target="_blank" rel="noopener noreferrer">
                 Find my polling place →
               </a>
