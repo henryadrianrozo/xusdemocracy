@@ -1,8 +1,8 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-20 · `a4e5c55`  
-**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. The September election push is half done on main and NOT deployed.  
+**Updated:** 2026-09-20 · `14e354d`  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. The September election push is half done on branch election-push-sept-2026, not merged and NOT deployed.  
 **Last shipped:** Brighter light-theme accent colors and two copy fixes. Nothing from the election push has reached production.  
 **Missing:** Early voting data for 43 of 51 jurisdictions, and next-election dates for state legislators. Both were planned and approved, neither is built.  
 **Blocked:** The early voting table needs the CEIR spreadsheet, which needs Adrian's OK to download. Hard expiry still stands: after 3 November 2026 the 2026-only datasets go stale and 52 indexed state pages empty out.  
