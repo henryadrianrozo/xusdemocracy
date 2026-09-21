@@ -1,7 +1,7 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-21 · `HASH`  
+**Updated:** 2026-09-21 · `e84b3cb`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, the election bar, legislator term and next-election facts, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
 **Last shipped:** Elections made multi-cycle so the site and its 52 state pages do not empty out after the general; the early-voting window is tied to the 2026 general only; calendar feeds cover both generals.  
 **Missing:** Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The chip scroll, dark theme, 375px layout and rendered cards have never been seen in a browser, because the Chrome extension was offline.  
