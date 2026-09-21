@@ -139,8 +139,9 @@ export default function RepCard({ rep }) {
   const { role, district } = splitRole(rep.role);
   const hasPhoto = Boolean(rep.photo) && !imgFailed;
 
-  // Federal reps and governors ship a `facts` array. State legislators come
-  // from OpenStates without term data, so they simply have none.
+  // Every level ships a `facts` array. State legislators get theirs from
+  // lib/legislatures.js, because OpenStates carries no term data; it is empty
+  // when the chamber's cycle is not confirmed.
   const facts = rep.facts && rep.facts.length ? rep.facts : null;
 
   return (

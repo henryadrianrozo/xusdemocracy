@@ -7,6 +7,7 @@ import {
   geocodioEnabled
 } from '@/lib/geocodio';
 import { getUpcomingElections } from '@/lib/elections';
+import { getVotingWindow } from '@/lib/earlyvoting';
 import { getGovernor } from '@/lib/governors';
 import { getLegislature } from '@/lib/legislatures';
 import { getNational } from '@/lib/national';
@@ -92,6 +93,11 @@ export async function POST(request) {
         geo.state,
         geo.stateFullName,
         elections.elections
+      ),
+      votingWindow: getVotingWindow(
+        geo.state,
+        geo.stateFullName,
+        elections.elections[0]?.date
       )
     });
   } catch (err) {
