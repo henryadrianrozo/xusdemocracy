@@ -1,12 +1,12 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-21 · `274f881`  
-**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. The September election push is shipped: early voting for all 51 jurisdictions, the election bar, and term plus next-election facts on state legislator cards.  
-**Last shipped:** CEIR early and mail voting windows for every state and DC, and legislator facts from a new election-cycle table.  
-**Missing:** Puerto Rico early voting (not in CEIR). Legislator facts for eight 2-4-4 senates. The chip scroll and the rendered cards were not checked in a browser by the agent that shipped this, because the Chrome extension was offline. Legislator facts were confirmed in the production API.  
-**Blocked:** Hard expiry after 3 November 2026: the 2026-only datasets go stale and 52 indexed state pages empty out.  
-**Next:** Tap the three election-bar chips once on a phone. Then the multi-cycle elections restructure and 2027 and 2028 primaries, before 4 November.
+**Updated:** 2026-09-21 · `HASH`  
+**State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, the election bar, legislator term and next-election facts, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
+**Last shipped:** Elections made multi-cycle so the site and its 52 state pages do not empty out after the general; the early-voting window is tied to the 2026 general only; calendar feeds cover both generals.  
+**Missing:** Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The chip scroll, dark theme, 375px layout and rendered cards have never been seen in a browser, because the Chrome extension was offline.  
+**Blocked:** Nothing on our side.  
+**Next:** Adrian taps the three election-bar chips once on a phone. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
 <!-- STATUS:END -->
 
 Read this first. It records what the project is, where every piece of data comes
@@ -62,8 +62,8 @@ own `localStorage` and never leaves the browser.
 | Governor photos | `lib/governors.js` | NGA headshots, hotlinked | Static URLs | If NGA moves a file. `RepCard` falls back to a monogram on image error, so it degrades quietly. |
 | **President, Cabinet, SCOTUS** | `lib/national.js` | [whitehouse.gov](https://www.whitehouse.gov/administration/the-cabinet/), [supremecourt.gov](https://www.supremecourt.gov/about/biographies.aspx) | **STATIC, hand-maintained** | Cabinet churns a few times per term. President and VP change Jan 2029. Court changes on death or retirement. |
 | **Congressional leadership** | `lib/national.js` | [house.gov](https://www.house.gov/leadership) for the House. **Senate names are secondary-sourced.** | **STATIC, hand-maintained** | **Re-elected every Congress, so January 2027.** |
-| **Primary dates** | `lib/primaries.js` | NCSL 2026 table | **STATIC, 2026 only** | **Hard-expires after Nov 2026.** No 2027/2028 data exists yet. |
-| **General election** | `lib/elections.js` | Statute | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026.** `GENERAL_2026` is a single hardcoded object. |
+| **Primary dates** | `lib/primaries.js` | NCSL 2026 table | **STATIC, 2026 only** | 2026 dates pass by 15 Sep. 2028 primaries are not published yet, so none are listed and the site shows only the 2028 general. Add them when NCSL publishes. |
+| **General elections** | `lib/elections.js` (`GENERALS`) | Statute: Tuesday after the first Monday in November | **Computed**, 2026 and 2028 | Add the next year to `GENERALS` before Nov 2028. Dates come from `generalElectionDate()`, so only the label and description are typed by hand. |
 | Legislature sizes | `lib/legislatures.js` | Verified vs openstates/people | Static, ~constitutional | Once a decade, or on constitutional amendment. |
 | Registration deadlines | `lib/registration.js` | CEIR 2026 survey | Static, statutory | When a legislature amends election law. Re-check each spring. |
 | **Early + mail voting windows** | `lib/earlyvoting.js` | CEIR "2026 Early and Mail Voting Dates", Sept 2026 | **STATIC, 2026 only** | **Hard-expires 3 Nov 2026**, but goes quiet rather than wrong. 51 jurisdictions loaded; Puerto Rico is not in CEIR. |
@@ -119,29 +119,32 @@ Every screen that shows a date also tells the user to confirm with their state
 election office, and links them there. Keep that. It is the honest hedge for
 single-sourced data.
 
-### The maintenance cliff: November 2026
+### The maintenance cliff: November 2026 (partly fixed 2026-09-21)
 
-This is the single most important thing to know about the project. On
-**4 November 2026** three static datasets go stale simultaneously:
+On **4 November 2026** several datasets go stale. What was fixed and what was not:
 
-1. `lib/elections.js`: `GENERAL_2026` is in the past, so the elections list
-   empties out and the officials page loses its Elections section content.
-2. `lib/primaries.js`: every 2026 date is in the past, so `.ics` feeds go empty.
-3. `lib/governors.js`: 36 governorships are decided, so names and parties change.
-4. `lib/national.js`: congressional leadership is re-elected when the new
-   Congress seats in January 2027, so the Speaker and both parties' leaders
-   may all change.
+**Fixed.** `lib/elections.js` now holds a `GENERALS` list (2026 and 2028) with
+dates computed from the statutory rule, so after 3 November the elections list
+shows the 2028 general instead of emptying out. Registration deadlines are
+computed from whichever election is next, so they follow. `lib/earlyvoting.js`
+returns null for any election other than the 2026 general, so 2026 windows never
+appear against 2028. The `.ics` feeds emit a one-week reminder and Election Day
+for every entry in `GENERALS`. Verified by faking the clock to 2026-11-05 and
+checking Ohio: one election (2028-11-07), a 2028 registration cutoff, no
+early-voting window.
 
-**The blast radius got bigger on 31 July 2026.** This used to degrade one
-dynamic view that a person had to type an address to reach. It now also
-degrades **52 statically generated, publicly indexed pages**, whose titles
-promise registration deadlines and election dates. After 4 November 2026 every
-one of them will show an empty election list and no deadline, and Google will
-still be serving them. Fixing the multi-cycle restructure is no longer just a
-data chore, it is a credibility problem with a public deadline.
-
-Fixing this properly means replacing the hardcoded 2026 objects with a
-multi-cycle structure. See "Next moves" below.
+**Not fixed, needs a human on a date:**
+1. `lib/governors.js`: 36 governorships are decided on 3 November. Re-verify all
+   50 against NGA the week after (NGA is fetchable, so this is cheap).
+2. `lib/national.js`: congressional leadership is re-chosen when the new Congress
+   seats in January 2027. House from house.gov; Senate is secondary-sourced.
+3. Primaries for 2027 and 2028 are not published, so the site lists only the
+   2028 general for those. Add them when NCSL publishes.
+4. Odd-year elections in 2027 (VA and NJ legislatures, KY, LA and MS state
+   offices) are not on the site at all. Add them as state-specific entries only
+   with dates confirmed against each state's election office.
+5. `/officials` and the 52 state pages now say "next election 2028" for a while,
+   which is true but thin. That is the cost of not guessing.
 
 ---
 
@@ -385,12 +388,13 @@ Do not re-diagnose this as a data problem. Check for `.env.local` first.
 **The September 2026 election push is shipped.** See that section above for
 the two open checks (chip scroll, browser pass).
 
-**Fix before November 2026 (not optional):**
-1. Restructure elections to be multi-cycle instead of `GENERAL_2026` +
-   `PRIMARIES_2026`. A flat, dated list keyed by state that simply filters to
-   "future" would survive every cycle without a rewrite.
-2. Add 2027 and 2028 primary dates.
-3. Re-verify all 50 governors against NGA the week after the election.
+**Before and after November 2026:**
+1. Done 2026-09-21: elections are multi-cycle (`GENERALS`), see the maintenance
+   cliff section for what that did and did not fix.
+2. Week of 9 November: re-verify all 50 governors against NGA.
+3. January 2027: re-check congressional leadership.
+4. When published: 2027 odd-year elections and 2028 primary dates.
+5. Before November 2028: add 2030 to `GENERALS`.
 
 **Product:**
 3a. **Sample ballots.** Google's Civic Information API still serves

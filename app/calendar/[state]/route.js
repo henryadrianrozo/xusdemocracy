@@ -1,12 +1,13 @@
 import { FIPS_TO_STATE, voteGovUrl } from '@/lib/states';
 import { SITE_HOST, SITE_URL } from '@/lib/site';
 import { PRIMARIES_2026 } from '@/lib/primaries';
+import { GENERALS } from '@/lib/elections';
 
 // Per-state election calendar feed (.ics). Users subscribe once
 // (webcal:// on Apple, "From URL" in Google Calendar) and their own
 // calendar app delivers election reminders, with no accounts and no push
-// infrastructure. Includes the state's 2026 primaries (NCSL data),
-// a one-week-out reminder, and the November general election.
+// infrastructure. Includes the state's 2026 primaries (NCSL data)
+// and, for each general election on record, a one-week-out reminder and Election Day.
 
 function icsDate(yyyymmdd) {
   // All-day event: DTEND is the following day per RFC 5545.
@@ -38,20 +39,31 @@ export async function GET(request, { params }) {
       summary: `🗳️ ${fullName}: ${e.label}`,
       description: `${e.label} in ${fullName}. Polls are open today. Check your ballot before you go!`
     })),
-    {
-      uid: '2026-general-reminder',
-      date: '20261027',
-      summary: '🗳️ One week to Election Day! Make your voting plan',
-      description:
-        `The 2026 General Election is Tuesday, November 3. Take some time this week to look up who and what is on your ballot. Find your officials at ${SITE_URL}`
-    },
-    {
-      uid: '2026-general',
-      date: '20261103',
-      summary: '🇺🇸 Election Day: 2026 General Election',
-      description:
-        'All 435 U.S. House seats, 33+ U.S. Senate seats, most governorships, and thousands of state legislative seats. Polls are open today. Go vote!'
-    }
+    ...GENERALS.flatMap((g) => {
+      const day = g.date.replace(/-/g, '');
+      const week = new Date(g.date + 'T00:00:00');
+      week.setDate(week.getDate() - 7);
+      const weekBefore = `${week.getFullYear()}${String(week.getMonth() + 1).padStart(2, '0')}${String(week.getDate()).padStart(2, '0')}`;
+      const long = new Date(g.date + 'T00:00:00').toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+      });
+      return [
+        {
+          uid: `${g.year}-general-reminder`,
+          date: weekBefore,
+          summary: '🗳️ One week to Election Day! Make your voting plan',
+          description: `The ${g.year} General Election is ${long}. Take some time this week to look up who and what is on your ballot. Find your officials at ${SITE_URL}`
+        },
+        {
+          uid: `${g.year}-general`,
+          date: day,
+          summary: `🇺🇸 Election Day: ${g.year} General Election`,
+          description: `${g.description} Polls are open today. Go vote!`
+        }
+      ];
+    })
   ].sort((a, b) => a.date.localeCompare(b.date));
 
   const lines = [
