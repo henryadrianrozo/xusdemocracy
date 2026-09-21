@@ -1,10 +1,10 @@
 # XUsDemocracy project brain
 
 <!-- STATUS:BEGIN -->
-**Updated:** 2026-09-21 · `60164a0`  
+**Updated:** 2026-09-21 · `274f881`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. The September election push is shipped: early voting for all 51 jurisdictions, the election bar, and term plus next-election facts on state legislator cards.  
 **Last shipped:** CEIR early and mail voting windows for every state and DC, and legislator facts from a new election-cycle table.  
-**Missing:** Puerto Rico early voting (not in CEIR). Legislator facts for eight 2-4-4 senates. The chip scroll and the legislator cards were not checked in a browser by the agent that shipped this, because the Chrome extension was offline and the local Geocodio key did not work.  
+**Missing:** Puerto Rico early voting (not in CEIR). Legislator facts for eight 2-4-4 senates. The chip scroll and the rendered cards were not checked in a browser by the agent that shipped this, because the Chrome extension was offline. Legislator facts were confirmed in the production API.  
 **Blocked:** Hard expiry after 3 November 2026: the 2026-only datasets go stale and 52 indexed state pages empty out.  
 **Next:** Tap the three election-bar chips once on a phone. Then the multi-cycle elections restructure and 2027 and 2028 primaries, before 4 November.
 <!-- STATUS:END -->
@@ -227,8 +227,11 @@ than a change to `.sub-title` itself.
 4. **Not checked in a browser:** dark theme, the 375px layout, and the
    rendering of the bar for states other than Virginia. The API output was
    checked for FL, WI, TX, AL, CO, ND and IL, and the date-dependent branches
-   were exercised with a faked clock. The legislator facts were checked in node
-   only; the pulled Vercel env did not give a working Geocodio key locally.
+   were exercised with a faked clock. The legislator facts were confirmed in the
+   production API for VA, WI and TX; the pulled Vercel env gave no working
+   Geocodio key locally. `queryGeocodio` takes the state from the lookup route,
+   because reading it from Geocodio's response produced no facts on the first
+   deploy and the cause was not tracked down.
 
 ## Routes
 
