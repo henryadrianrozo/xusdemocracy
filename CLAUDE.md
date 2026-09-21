@@ -3,7 +3,7 @@
 <!-- STATUS:BEGIN -->
 **Updated:** 2026-09-21 · `a86c785`  
 **State:** Live at democracy.xusall.com. Address to representatives, nonpartisan, nothing stored. Early voting for all 50 states and DC, three election alert cards at the top of `/officials`, a polling place link for every state, and a multi-cycle election list (2026 and 2028) that survives 3 November.  
-**Last shipped:** The top cards are the red alert cards again, with larger titles and in date order; each links directly and jumps to its block in Elections. Elections lost its red deadline box: "Register to Vote" and "Where and When to Vote" each open with a blue countdown card (days left to register, days until early voting opens) and one link. Stacked election cards no longer leave a gap on phones.  
+**Last shipped:** Design pass on the election cards. The red top cards now share one shape (red title, date, countdown, link, links level), and Election Day shows its date first like the others. The countdown blocks under "Register to Vote" and "Where and When to Vote" are red, so blue means an election and red a deadline. Two deeper red tokens carry the text contrast.  
 **Missing:** The old address xusalldevelopment@gmail.com is still in `lib/site.js` (`CONTACT_EMAIL`, feeding the structured data), `/calendars`, `/why` and `llms.txt`. Change them together when Adrian confirms hello@xusall.com replaces it. 15 of the 51 polling links are not confirmed (list in the header of `lib/pollingplace.js`). Adrian chose to assume they work for now. Click NM and OK first: both returned 403 even in a real browser. Puerto Rico early voting (not in CEIR). Odd-year 2027 elections and 2028 primaries (not published yet). Legislator facts for eight 2-4-4 senates. The cards were checked on localhost at desktop and phone width (TX) and dark (VA); card clicks scrolling to their blocks still need one tap by hand, since the automated tab never runs animation frames.  
 **Blocked:** Nothing on our side.  
 **Next:** Adrian clicks the NM and OK polling links, and the other unconfirmed ones when convenient. Week of 9 November: re-verify all 50 governors against NGA. January 2027: re-check congressional leadership.
@@ -173,8 +173,10 @@ early-voting, absentee, or mail data anywhere in the repo.
 2. **The election alert cards** at the top of `/officials`. They began as three
    chips, became one banner, then three red cards; on 2026-09-21 they were tried
    as stacked horizontal cards with a blue badge and Adrian took them back to the
-   red cards, with the titles made full-size (`.alert-label`). They are small and
-   side by side on desktop, stacked on a phone, in date order: registration
+   red cards. Every card has the same shape: a red title (`--red-ink`), the date as
+   the big fact, the countdown muted under it, the link pinned to the bottom so
+   the links line up. They are small and side by side on desktop, stacked on a
+   phone, in date order: registration
    leads unless early voting is already open. Each carries a direct link, and
    clicking a card runs `jumpTo()`, which opens Elections and scrolls to the
    matching block: registration to `#election-register`, early voting to
@@ -186,9 +188,13 @@ early-voting, absentee, or mail data anywhere in the repo.
    note below, this reverses an earlier decision on purpose.
 4. **Elections has no red box any more.** Registration and early voting each
    lead a plain action block, "Register to Vote" and "Where and When to Vote",
-   with a `CountdownCard`: the election card's blue block holding the days left
+   with a `CountdownCard`: the election card's shape with a red block
+   (`.election-date-deadline`, `--red-fill`) holding the days left
    (`registrationBadge()`, `earlyBadge()`, a short word where there is no date to
-   count) and the full sentence beside it, then one link. A red box holding a facts grid plus both links, repeated again just
+   count) and the full sentence beside it, then one link. Blue marks an election,
+   red a deadline the reader acts on. `--red-ink` and `--red-fill` exist because
+   `--red` is too light for small white text or red text on the pink wash; `--red`
+   itself (buttons, wordmark, party pills) is unchanged. A red box holding a facts grid plus both links, repeated again just
    below, was tried on 2026-09-21 and read as a jumble. The state pages still use
    `.deadline-box`.
 5. **The Elections lede explains general elections**, not just primaries. The

@@ -135,12 +135,13 @@ function AlertCard({ label, fact, sub, jump, action }) {
 }
 
 // The countdown card in the Register and Where and When blocks: the election
-// card's blue block on the left, the full sentence on the right, so the number a
-// reader saw at the top is waiting for them when they land here.
+// card's shape, the full sentence beside the number. Its block is red, not blue:
+// blue marks an election, red a deadline the reader acts on, which is also the
+// colour of the alert card that jumped them here and of the button below.
 function CountdownCard({ badge, headline, detail }) {
   return (
     <div className="election-card countdown-card">
-      <div className={`election-date${badge.word ? ' election-date-word' : ''}`}>
+      <div className={`election-date election-date-deadline${badge.word ? ' election-date-word' : ''}`}>
         <span className="election-day-count">{badge.big}</span>
         {badge.small && <span>{badge.small}</span>}
       </div>
@@ -209,11 +210,10 @@ function ElectionAlerts({ election, deadline, votingWindow, registrationUrl, pol
       {!earlyFirst && early}
 
       <AlertCard
+        // Date first, countdown under it, the same shape as the other two cards.
         label="Election Day"
-        fact={
-          today ? 'Today' : `${election.daysUntil} ${plural(election.daysUntil, 'day', 'days')} away`
-        }
-        sub={dayLabel}
+        fact={dayLabel}
+        sub={today ? 'Today' : `${election.daysUntil} ${plural(election.daysUntil, 'day', 'days')} away`}
         jump="elections"
         action={
           <button className="alert-action" onClick={() => jumpTo('election-calendars')}>

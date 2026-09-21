@@ -11,6 +11,10 @@
   --text: #1c2130;
   --muted: #5c6370;
   --red: #FF3B30;
+  /* Deeper reds where --red is too light to carry text: the alert card titles
+     on their pink wash, and white text on the deadline countdown blocks. */
+  --red-ink: #C4271C;
+  --red-fill: #C4271C;
   --blue: #0A84FF;
   --dem: #0A84FF;
   --rep: #FF3B30;
@@ -27,6 +31,8 @@
   --text: #f5f3ee;
   --muted: #93a0af;
   --red: #e2574f;
+  --red-ink: #f0857d;
+  --red-fill: #c9423a;
   --blue: #5b8fe0;
   --dem: #6fa0ec;
   --rep: #e2746e;
@@ -324,6 +330,7 @@ a { color: var(--blue); }
   flex-direction: column;
   gap: 2px;
   width: 100%;
+  margin-bottom: 10px;
   background: none;
   border: 0;
   padding: 0;
@@ -331,14 +338,16 @@ a { color: var(--blue); }
   text-align: left;
   cursor: pointer;
 }
-/* The title is what a reader scans for, so it is full-strength text at a
-   readable size rather than a small muted eyebrow. */
-.alert-label { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+/* Three levels, the same in every card: a red title, the date as the big dark
+   fact, the countdown muted under it. */
+.alert-label { font-size: 0.95rem; font-weight: 700; color: var(--red-ink); margin-bottom: 2px; }
 .alert-fact { font-size: 1.2rem; font-weight: 800; color: var(--text); line-height: 1.25; }
 .alert-main:hover .alert-fact { color: var(--blue); }
 .alert-sub { font-size: 0.84rem; color: var(--muted); }
+/* margin-top: auto pins the link to the bottom, so the links line up across the
+   row even when one card has an extra line. */
 .alert-action {
-  margin-top: 10px;
+  margin-top: auto;
   padding: 0;
   background: none;
   border: 0;
@@ -700,6 +709,7 @@ details[open] > summary .caret { transform: rotate(90deg); }
   letter-spacing: 0.04em;
 }
 .election-day-count { font-size: 2rem; font-weight: 800; }
+.election-date-deadline { background: var(--red-fill); }
 /* A word in place of a count, for states with no date to count toward. */
 .election-date-word { justify-content: center; }
 .election-date-word .election-day-count { font-size: 1.05rem; }
