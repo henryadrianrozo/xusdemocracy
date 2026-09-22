@@ -23,6 +23,15 @@ function slug(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+// RFC 5545 (3.3.11) requires backslash, comma, and semicolon to be escaped in
+// TEXT values, or a strict parser treats them as structural characters --
+// the general-election descriptions below contain commas, which would
+// otherwise be read as value separators. Order matters: backslash first, so
+// escaping the other two doesn't double-escape the backslash it just added.
+function escapeIcsText(text) {
+  return text.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+
 export async function GET(request, { params }) {
   const code = params.state?.replace(/\.ics$/i, '').toUpperCase();
   const entry = Object.values(FIPS_TO_STATE).find(([abbr]) => abbr === code);
@@ -72,8 +81,8 @@ export async function GET(request, { params }) {
     'PRODID:-//XUsDemocracy//Election Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${fullName} Elections (XUsDemocracy)`,
-    'X-WR-CALDESC:Primary and general election dates and reminders. Dates per NCSL and official sources; always verify with your state election office. Free and nonpartisan.',
+    `X-WR-CALNAME:${escapeIcsText(`${fullName} Elections (XUsDemocracy)`)}`,
+    `X-WR-CALDESC:${escapeIcsText('Primary and general election dates and reminders. Dates per NCSL and official sources; always verify with your state election office. Free and nonpartisan.')}`,
     'REFRESH-INTERVAL;VALUE=DURATION:P1W'
   ];
 
@@ -84,8 +93,8 @@ export async function GET(request, { params }) {
       `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
       `DTSTART;VALUE=DATE:${ev.date}`,
       `DTEND;VALUE=DATE:${icsDate(ev.date)}`,
-      `SUMMARY:${ev.summary}`,
-      `DESCRIPTION:${ev.description} Register or check your registration: ${registerUrl}`,
+      `SUMMARY:${escapeIcsText(ev.summary)}`,
+      `DESCRIPTION:${escapeIcsText(`${ev.description} Register or check your registration: ${registerUrl}`)}`,
       `URL:${SITE_URL}`,
       'END:VEVENT'
     );

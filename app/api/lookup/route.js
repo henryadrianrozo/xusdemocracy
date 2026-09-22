@@ -18,17 +18,46 @@ import { FIPS_TO_STATE } from '@/lib/states';
 // not stored, not logged, and not sent anywhere except the geocoding
 // services needed to match districts (US Census Bureau; Geocodio if configured).
 export async function POST(request) {
+  // Parsed outside the main try/catch and never logged: a malformed body
+  // throws a SyntaxError whose message embeds the start of the raw body,
+  // which would otherwise reach the address-never-logged catch below.
+  let body;
   try {
-    const body = await request.json();
-    const address = body.address?.trim();
-    const { lat, lon } = body;
-    const hasCoords = typeof lat === 'number' && typeof lon === 'number';
+    body = await request.json();
+  } catch {
+    return Response.json({ error: 'Please enter a street address.' }, { status: 400 });
+  }
+
+  try {
+    const address = typeof body?.address === 'string' ? body.address.trim() : '';
+    const { lat, lon } = body ?? {};
+    const hasCoords =
+      typeof lat === 'number' &&
+      Number.isFinite(lat) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      typeof lon === 'number' &&
+      Number.isFinite(lon) &&
+      lon >= -180 &&
+      lon <= 180;
 
     if (!hasCoords && (!address || address.length < 5)) {
       return Response.json({ error: 'Please enter a street address.' }, { status: 400 });
     }
 
-    let geo = hasCoords ? await geocodeCoords(lat, lon) : await geocodeAddress(address);
+    // A Census outage throws rather than returning null (see lib/census.js),
+    // which used to escape straight to the outer catch and skip the Geocodio
+    // fallback below entirely -- exactly when that fallback is supposed to
+    // matter. Catching it here and falling through to `geo = null` lets the
+    // existing `(!geo || !geo.state)` fallback check handle it like any other
+    // no-match.
+    let geo = null;
+    try {
+      geo = hasCoords ? await geocodeCoords(lat, lon) : await geocodeAddress(address);
+    } catch (err) {
+      console.error('census geocode failed:', err.message);
+      geo = null;
+    }
     let prefetchedStateLegs = null;
 
     // Census is strict; Geocodio completes partial or misspelled addresses.
