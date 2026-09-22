@@ -261,7 +261,17 @@ function PersonList({ people, numbered = false, faces = false, onOpenPortrait })
           {faces && <FaceAvatar person={m} onOpen={onOpenPortrait} />}
           <span className="national-entry">
             <span className="national-name">{m.name}</span>
-            <span className="national-role">{m.role}</span>
+            {/* m.website: only Cabinet entries (DEPARTMENTS, CABINET_RANK)
+                carry this, linking the title to that department/agency's own
+                homepage. Not the person's name: see lib/national.js for why
+                a per-person bio link isn't something this pass could verify. */}
+            {m.website ? (
+              <a className="national-role" href={m.website} target="_blank" rel="noopener noreferrer">
+                {m.role}
+              </a>
+            ) : (
+              <span className="national-role">{m.role}</span>
+            )}
             {m.does && <span className="national-does">{m.does}</span>}
           </span>
         </li>

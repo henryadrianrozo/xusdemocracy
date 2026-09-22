@@ -825,6 +825,12 @@ details[open] > summary .caret { transform: rotate(90deg); }
 }
 .national-name { color: var(--text); font-weight: 600; font-size: 0.94rem; }
 .national-role { color: var(--muted); font-size: 0.86rem; }
+/* Cabinet titles that link to their department's homepage: a secondary
+   reference, not a call to action, so it inherits the same restrained
+   treatment as the drawer's and footer's fine print rather than the
+   brighter body-link blue. */
+a.national-role { text-decoration: none; }
+a.national-role:hover { text-decoration: underline; }
 
 .national-details { border-top: 1px solid var(--border); }
 .national-details summary {
