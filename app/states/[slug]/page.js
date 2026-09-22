@@ -219,6 +219,7 @@ export default async function StatePage({ params }) {
                     <h3>{el.name}</h3>
                     <p className="election-date-label">{longDate(el.date)}</p>
                     {el.description && <p className="election-desc">{el.description}</p>}
+                    {el.why && <p className="election-desc">{el.why}</p>}
                   </div>
                 </div>
               ))

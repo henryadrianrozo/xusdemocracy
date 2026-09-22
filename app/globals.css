@@ -552,6 +552,39 @@ details[open] > summary .caret { transform: rotate(90deg); }
 .rep-avatar-photo:hover .rep-avatar-zoom,
 .rep-avatar-photo:focus-visible .rep-avatar-zoom { opacity: 1; }
 
+/* A small face for someone in the "Appointed and Chosen" list: the Supreme
+   Court and congressional leadership. Same recipe as .rep-avatar, at a
+   quarter of the size and with no hover zoom overlay, since 44px is too
+   small for that affordance to read. */
+.face-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  overflow: hidden;
+  border: 2px solid var(--ind);
+  background: color-mix(in srgb, var(--ind) 13%, transparent);
+  color: var(--ind);
+  padding: 0;
+}
+.face-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.face-avatar.party-dem {
+  border-color: var(--dem);
+  background: color-mix(in srgb, var(--dem) 13%, transparent);
+  color: var(--dem);
+}
+.face-avatar.party-rep {
+  border-color: var(--rep);
+  background: color-mix(in srgb, var(--rep) 13%, transparent);
+  color: var(--rep);
+}
+.face-avatar-photo { cursor: zoom-in; }
+
 .rep-info { flex: 1 1 220px; min-width: 0; }
 .rep-info h3 { margin: 0 0 5px; font-size: 1.12rem; font-weight: 700; color: var(--text); }
 .rep-meta {
@@ -730,19 +763,6 @@ details[open] > summary .caret { transform: rotate(90deg); }
   border-radius: 14px;
   background: color-mix(in srgb, var(--text) 2%, transparent);
 }
-.national-heading {
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 6px;
-}
-.national-lede {
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.6;
-  margin-bottom: 14px;
-  max-width: 60ch;
-}
 .national-row {
   display: flex;
   flex-wrap: wrap;
@@ -792,6 +812,11 @@ details[open] > summary .caret { transform: rotate(90deg); }
   padding: 7px 0;
 }
 .national-list li + li { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+/* Rows carrying a .face-avatar need it vertically centered against the two
+   lines of text beside it; baseline alignment (the default above) puts the
+   circle too high. Scoped to these rows so the Cabinet's plain rows are
+   unaffected. */
+.national-list-face { align-items: center; }
 .national-entry { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .national-does {
   flex-basis: 100%;
@@ -826,6 +851,8 @@ details[open] > summary .caret { transform: rotate(90deg); }
   margin: 8px 0 4px;
   max-width: 62ch;
 }
+/* Directly under a list that already carries its own bottom margin. */
+.branch-note-tight { margin-top: 0; }
 .branch-crosslink { margin-top: 18px; font-size: 0.9rem; }
 .branch-crosslink a { text-decoration: none; font-weight: 600; }
 .branch-crosslink a:hover { text-decoration: underline; }

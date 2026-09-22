@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-function initials(name) {
+export function initials(name) {
   return name.split(' ').filter(Boolean).map((w) => w[0]).slice(0, 2).join('');
 }
 
@@ -107,8 +107,10 @@ function saveContact(rep) {
 }
 
 // Full-bleed portrait viewer. Officials without a published photo never reach
-// this, because their card shows a monogram that is not clickable.
-function PortraitViewer({ rep, onClose }) {
+// this, because their card shows a monogram that is not clickable. Exported
+// so the small face circles in the "Appointed and Chosen" block (Supreme
+// Court, congressional leadership) can reuse it instead of a second lightbox.
+export function PortraitViewer({ rep, onClose }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);

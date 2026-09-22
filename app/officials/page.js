@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import RepCard from '@/components/RepCard';
+import RepCard, { PortraitViewer, initials, partyMeta } from '@/components/RepCard';
 import { googleCalendarUrl, icsUrl, webcalUrl } from '@/lib/site';
 
 function ordinal(n) {
@@ -249,12 +249,16 @@ function SavePrompt({ address, onSaved, onDismiss }) {
   );
 }
 
-function PersonList({ people, numbered = false }) {
+// `faces` adds a small clickable circle before each entry, reusing the same
+// party ring RepCard uses. Left off for the Cabinet on purpose: 21 faces is
+// too much, and cabinet secretaries are the group readers recognize least.
+function PersonList({ people, numbered = false, faces = false, onOpenPortrait }) {
   return (
     <ol className="national-list">
       {people.map((m, i) => (
-        <li key={m.name}>
+        <li key={m.name} className={faces ? 'national-list-face' : undefined}>
           {numbered && <span className="national-rank">{i + 1}</span>}
+          {faces && <FaceAvatar person={m} onOpen={onOpenPortrait} />}
           <span className="national-entry">
             <span className="national-name">{m.name}</span>
             <span className="national-role">{m.role}</span>
@@ -266,18 +270,56 @@ function PersonList({ people, numbered = false }) {
   );
 }
 
+// Deliberately smaller and quieter than a rep card's photo: this is a face to
+// recognize, not the main content of a card. Justices carry no `party`, so
+// they render with the neutral ring rather than a color that would imply one.
+function FaceAvatar({ person, onOpen }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const pm = partyMeta(person.party);
+  const hasPhoto = Boolean(person.photo) && !imgFailed;
+
+  if (!hasPhoto) {
+    return (
+      <div className={`face-avatar ${pm.cls}`} aria-hidden="true">
+        {initials(person.name)}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      className={`face-avatar face-avatar-photo ${pm.cls}`}
+      onClick={() => onOpen(person)}
+      aria-label={`View larger portrait of ${person.name}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={person.photo}
+        alt={person.name}
+        referrerPolicy="no-referrer"
+        onError={() => setImgFailed(true)}
+      />
+    </button>
+  );
+}
+
 // Everyone here reached office without voters choosing them, which is the
 // whole reason this block is separate from the cards above it. Grouped by
 // branch so the Cabinet reads as part of the executive rather than a list
 // floating on its own.
 function NationalBlock({ national }) {
+  const [portrait, setPortrait] = useState(null);
   if (!national) return null;
   const { departments, cabinetRank, leadership, supremeCourt } = national;
 
+  const court = supremeCourt.map((j) => ({
+    ...j,
+    role: `${j.role}, seated ${j.seated} under ${j.nominatedBy}`
+  }));
+
   return (
     <div className="national-block">
-      <h3 className="national-heading">The rest of the federal government</h3>
-      <p className="national-lede">
+      <p className="sub-lede">
         Nobody below is elected by voters. They are appointed, confirmed, or chosen by other
         officials, and they still shape a great deal of federal policy.
       </p>
@@ -292,18 +334,12 @@ function NationalBlock({ national }) {
             Nominated by a President, confirmed by the Senate, and seated for life. They have
             the final say on what federal law and the Constitution mean.
           </p>
-          <ul className="national-list">
-            {supremeCourt.map((j) => (
-              <li key={j.name}>
-                <span className="national-entry">
-                  <span className="national-name">{j.name}</span>
-                  <span className="national-role">
-                    {j.role}, seated {j.seated} under {j.nominatedBy}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
+          <PersonList people={court} faces onOpenPortrait={setPortrait} />
+          <p className="branch-note branch-note-tight">
+            <a href="https://www.supremecourt.gov" target="_blank" rel="noopener noreferrer">
+              Learn more about the Court on supremecourt.gov →
+            </a>
+          </p>
         </details>
         <p className="branch-note">
           The Supreme Court is the top of a much larger system. Roughly 870 other federal
@@ -344,13 +380,15 @@ function NationalBlock({ national }) {
             trying to be heard.{' '}
             <a href="/democracy#congress">How Congress organizes itself</a>
           </p>
-          <PersonList people={leadership} />
+          <PersonList people={leadership} faces onOpenPortrait={setPortrait} />
         </details>
       </div>
 
       <p className="branch-crosslink">
         <a href="/democracy#branches">Learn how the three branches fit together →</a>
       </p>
+
+      {portrait && <PortraitViewer rep={portrait} onClose={() => setPortrait(null)} />}
     </div>
   );
 }
@@ -617,7 +655,22 @@ export default function Officials() {
             </SubSection>
           )}
 
-          <NationalBlock national={national} />
+          {national && (
+            <SubSection
+              id="national"
+              title="Appointed and Chosen"
+              count={
+                national.supremeCourt.length +
+                national.departments.length +
+                national.cabinetRank.length +
+                national.leadership.length
+              }
+              collapsed={collapsed.has('national')}
+              onToggle={toggleSection}
+            >
+              <NationalBlock national={national} />
+            </SubSection>
+          )}
         </MajorSection>
 
         <MajorSection id="state" title="State" lede={stateLede}>
@@ -660,7 +713,7 @@ export default function Officials() {
         <MajorSection
           id="elections"
           title="Elections"
-          lede="A general election fills the seat: every voter picks among the candidates on the ballot. A primary comes earlier and decides who those candidates are. Far fewer people vote in primaries, so each ballot counts for more. Here is what is next where you live."
+          lede="A primary decides who gets on the ballot. A general election fills the seat. Here is what is next where you live."
         >
           {elections.map((el) => (
             <div className="election-card" key={el.date + el.name}>
@@ -672,6 +725,7 @@ export default function Officials() {
                 <h3>{el.name}</h3>
                 <p className="election-date-label">{longDate(el.date)}</p>
                 {el.description && <p className="election-desc">{el.description}</p>}
+                {el.why && <p className="election-desc">{el.why}</p>}
               </div>
             </div>
           ))}
