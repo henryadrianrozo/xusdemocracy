@@ -1,16 +1,35 @@
-import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
+import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/lib/site';
+
+const TITLE = 'Who We Are';
+const DESCRIPTION =
+  'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.';
 
 // Title is bare: the root layout applies the "%s | XUsDemocracy" template.
+//
+// openGraph/twitter are spelled out in full here rather than left partial:
+// Next.js does not deep-merge a page-level openGraph with the root layout's,
+// it replaces it wholly, which was silently dropping the share-card image,
+// siteName, type, and locale (confirmed against the built HTML), and leaving
+// this page's Twitter card showing the homepage's title/description since
+// neither was ever set. Same fix applied to democracy, states, and
+// states/[slug].
 export const metadata = {
-  title: 'Who We Are',
-  description:
-    'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/why' },
   openGraph: {
-    title: 'Who We Are',
-    description:
-      'Why XUsDemocracy exists: knowing who represents you should take ten seconds, not an afternoon of research.',
-    url: '/why'
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_US',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/why',
+    images: ['/opengraph-image']
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION
   }
 };
 

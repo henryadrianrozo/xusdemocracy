@@ -1,14 +1,31 @@
-import { SITE_URL } from '@/lib/site';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { ALL_STATES, stateSlug } from '@/lib/states';
 
+const TITLE = 'Elections and Officials by State';
 const DESCRIPTION =
   'Voter registration deadlines, upcoming election dates, U.S. senators, and governors for all 50 states, plus DC and Puerto Rico.';
 
+// openGraph/twitter spelled out in full rather than left partial: see the
+// comment in app/why/page.js for why a partial openGraph here silently drops
+// the share-card image and leaves the Twitter card showing the homepage's.
 export const metadata = {
-  title: 'Elections and Officials by State',
+  title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/states' },
-  openGraph: { title: 'Elections and Officials by State', description: DESCRIPTION, url: '/states' }
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_US',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/states',
+    images: ['/opengraph-image']
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION
+  }
 };
 
 const STATES = [...ALL_STATES].sort((a, b) => a[1].localeCompare(b[1]));

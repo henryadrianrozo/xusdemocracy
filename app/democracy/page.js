@@ -1,14 +1,32 @@
-import { SITE_URL } from '@/lib/site';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 
+const TITLE = 'How Our Democracy Works';
 const DESCRIPTION =
   'How the American system works, how elections are actually run and secured, how Congress organizes itself, and what the evidence says about why any of it matters.';
 
 // Title is bare: the root layout applies the "%s | XUsDemocracy" template.
+//
+// openGraph/twitter spelled out in full rather than left partial: see the
+// comment in app/why/page.js for why a partial openGraph here silently drops
+// the share-card image and leaves the Twitter card showing the homepage's.
 export const metadata = {
-  title: 'How Our Democracy Works',
+  title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: '/democracy' },
-  openGraph: { title: 'How Our Democracy Works', description: DESCRIPTION, url: '/democracy' }
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_US',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: '/democracy',
+    images: ['/opengraph-image']
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION
+  }
 };
 
 // The sourcing below is this page's whole claim to authority, so it is exposed

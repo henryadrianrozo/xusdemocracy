@@ -5,7 +5,7 @@ import { getFederalReps } from '@/lib/federal';
 import { getGovernor } from '@/lib/governors';
 import { getLegislature } from '@/lib/legislatures';
 import { getRegistrationDeadline } from '@/lib/registration';
-import { googleCalendarUrl, SITE_URL, webcalUrl } from '@/lib/site';
+import { googleCalendarUrl, SITE_NAME, SITE_URL, webcalUrl } from '@/lib/site';
 import { ALL_STATES, DELEGATE_ONLY, stateFromSlug, stateSlug } from '@/lib/states';
 
 // One page per state and territory, statically generated.
@@ -79,11 +79,30 @@ export async function generateMetadata({ params }) {
   const title = `${name} Voter Registration Deadline and Elections`;
   const url = `/states/${stateSlug(name)}`;
 
+  // openGraph/twitter spelled out in full rather than left partial: see the
+  // comment in app/why/page.js for why a partial openGraph here silently
+  // drops the share-card image and leaves the Twitter card showing the
+  // homepage's title/description instead of this state's own -- confirmed
+  // against the built HTML for /states/florida, which had a correct,
+  // state-specific og:description but the homepage's twitter:title.
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url }
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      locale: 'en_US',
+      title,
+      description,
+      url,
+      images: ['/opengraph-image']
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description
+    }
   };
 }
 
