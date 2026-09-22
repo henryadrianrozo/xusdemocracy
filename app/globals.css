@@ -16,6 +16,14 @@
   --red-ink: #C4271C;
   --red-fill: #C4271C;
   --blue: #0A84FF;
+  /* Same problem, blue side: --blue is 3.4:1 or worse as body-link text on
+     --bg, and worse still as white-on-blue fill in dark theme (3.26:1). One
+     darker, more saturated blue covers both uses at ≥5.7:1. Light theme
+     needs the darker value for both jobs; dark theme's --blue already
+     passes as text (6.0:1) so --blue-ink repeats it there, but still needs
+     its own darker --blue-fill for white-on-blue fills. */
+  --blue-ink: #0B63CE;
+  --blue-fill: #0B63CE;
   --dem: #0A84FF;
   --rep: #FF3B30;
   --ind: #6b7280;
@@ -34,6 +42,8 @@
   --red-ink: #f0857d;
   --red-fill: #c9423a;
   --blue: #5b8fe0;
+  --blue-ink: #5b8fe0;
+  --blue-fill: #2f6fc7;
   --dem: #6fa0ec;
   --rep: #e2746e;
   --ind: #9aa2ad;
@@ -61,14 +71,17 @@ body {
   overflow-wrap: break-word;
 }
 
-a { color: var(--blue); }
+/* --blue-ink, not --blue: --blue is 3.44:1 on --bg in light theme, below
+   the 4.5:1 AA text threshold, the same problem this file already solved
+   for red (see --red-ink above) but never extended to blue. */
+a { color: var(--blue-ink); }
 
 /* A button that should read as a link. */
 .linkish {
   background: none;
   border: none;
   padding: 0;
-  color: var(--blue);
+  color: var(--blue-ink);
   font: inherit;
   cursor: pointer;
 }
@@ -247,13 +260,18 @@ a { color: var(--blue); }
 }
 .lookup-form input::placeholder { color: var(--muted); }
 .lookup-form input:focus { outline: none; border-color: var(--blue); }
+/* A 1.5px border-color swap alone is a weak focus indicator (WCAG 2.4.11),
+   and on the site's only text input. Not in the original plan for this
+   pass, but the same block already being touched here for its color, so
+   fixed alongside it rather than left for a later session. */
+.lookup-form input:focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 2px; }
 .lookup-form button {
   flex: 0 0 auto;
   padding: 15px 26px;
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
-  background: var(--red);
+  background: var(--red-fill);
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
@@ -267,7 +285,7 @@ a { color: var(--blue); }
   margin-top: 16px;
   background: none;
   border: none;
-  color: var(--blue);
+  color: var(--blue-ink);
   font-size: 0.94rem;
   cursor: pointer;
   font-family: inherit;
@@ -288,7 +306,7 @@ a { color: var(--blue); }
 
 .error {
   margin-top: 1rem;
-  color: var(--red);
+  color: var(--red-ink);
   background: color-mix(in srgb, var(--red) 8%, transparent);
   /* Plain fallback first: Safari <16.2 drops the whole shorthand on an
      unsupported color-mix() rather than just the one value, so without this
@@ -390,7 +408,7 @@ a { color: var(--blue); }
   font: inherit;
   font-size: 0.84rem;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--blue-ink);
   text-decoration: none;
   cursor: pointer;
 }
@@ -414,7 +432,7 @@ a { color: var(--blue); }
 .save-prompt p { color: var(--muted); font-size: 0.9rem; margin: 0; max-width: 46ch; }
 .save-prompt-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .save-prompt-yes {
-  background: var(--blue);
+  background: var(--blue-fill);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -770,7 +788,7 @@ details[open] > summary .caret { transform: rotate(90deg); }
   padding: 18px 20px;
 }
 .election-date {
-  background: var(--blue);
+  background: var(--blue-fill);
   color: #fff;
   border-radius: 14px;
   padding: 16px 20px;
@@ -917,7 +935,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
 .deadline-box h2,
 .deadline-box h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .deadline-box p { color: var(--muted); font-size: 0.92rem; margin: 0; }
-.deadline-pointer { margin-top: 8px !important; font-size: 0.85rem !important; opacity: 0.85; }
+/* No opacity: its child <a> already gets --blue-ink from the global `a`
+   rule above; opacity here just dampened that back down toward failing
+   contrast again. */
+.deadline-pointer { margin-top: 8px !important; font-size: 0.85rem !important; }
 
 /* One action per block, each with a line explaining what it does. The heading
    is a .sub-title, so it deliberately carries no size or weight of its own
@@ -950,16 +971,20 @@ details[open] > summary .caret { transform: rotate(90deg); }
   display: inline-block;
   font-weight: 600;
   font-size: 0.92rem;
-  color: var(--red);
+  /* --red-ink, not --red: this is the site's main "check or register to
+     vote" button. --red as text is 3.33:1 on --bg, below AA; the border
+     stays the brighter --red since a 1.5px line has no text-contrast
+     requirement. */
+  color: var(--red-ink);
   border: 1.5px solid var(--red);
   border-radius: 8px;
   padding: 10px 18px;
   text-decoration: none;
 }
 .cta-link:hover { background: color-mix(in srgb, var(--red) 8%, transparent); }
-.cta-link-blue { color: var(--blue); border-color: var(--blue); }
+.cta-link-blue { color: var(--blue-ink); border-color: var(--blue); }
 .cta-link-blue:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
-.subscribe-link { font-size: 0.9rem; color: var(--blue); text-decoration: none; }
+.subscribe-link { font-size: 0.9rem; color: var(--blue-ink); text-decoration: none; }
 .subscribe-link:hover { text-decoration: underline; }
 
 .feedback-note {
@@ -969,13 +994,14 @@ details[open] > summary .caret { transform: rotate(90deg); }
   margin-top: 3rem;
 }
 
+/* No opacity: fading an already-muted color further pushed light theme to
+   4.11:1, under AA. --muted alone is the fix. */
 .footer-xsl {
   margin-top: 0.6rem;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-  opacity: 0.85;
 }
 
 /* Calendars page */
@@ -995,7 +1021,7 @@ details[open] > summary .caret { transform: rotate(90deg); }
 .calendar-actions button {
   background: none;
   border: none;
-  color: var(--blue);
+  color: var(--blue-ink);
   cursor: pointer;
   font-size: 0.85rem;
   padding: 0;
@@ -1048,8 +1074,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
   background: var(--bg);
 }
 .site-footer strong { color: var(--text); }
-.site-footer a { color: var(--blue); }
-.footer-fine { font-size: 0.78rem; margin-top: 0.4rem; opacity: 0.75; }
+.site-footer a { color: var(--blue-ink); }
+/* No opacity, same reasoning as .footer-xsl just above: it was fading
+   --muted (already inherited from .site-footer) to 3.32:1 in light theme. */
+.footer-fine { font-size: 0.78rem; margin-top: 0.4rem; }
 /* The XUsAll attribution reads as fine print, not a call to action, so it
    stays muted rather than picking up .site-footer a's blue. Comes after that
    rule on purpose: equal specificity, so source order decides. */
