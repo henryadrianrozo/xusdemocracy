@@ -1,4 +1,4 @@
-import { SITE_URL } from '@/lib/site';
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
 import { ALL_STATES, stateSlug } from '@/lib/states';
 
 // Served at /llms.txt, following the llmstxt.org convention: a plain-text map
@@ -22,7 +22,7 @@ function body() {
 
 > A free, nonpartisan tool that tells any American who represents them at every level of government, when their next election is, and when their voter registration deadline falls. No account, no ads, no tracking. The address you enter is used for one lookup and is never stored or logged.
 
-Run by XUsAll. Corrections go to xusalldevelopment@gmail.com.
+Run by XUsAll. Corrections go to ${CONTACT_EMAIL}.
 
 ## Core pages
 

@@ -5,6 +5,15 @@ import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/lib/site';
 const DESCRIPTION =
   'Enter your address and see your elected officials, your upcoming elections, and your voter registration deadline. Free, nonpartisan, and your address is never stored.';
 
+// Search and social preview are different jobs: metadata.description and the
+// JSON-LD below are tuned for search, so they keep the long DESCRIPTION. A
+// social card (Instagram, LinkedIn, WhatsApp) has room for one short line
+// before it wraps into a wall of text, so openGraph/twitter get this instead.
+// Keep it in step with the sub-line in app/opengraph-image.js; they are meant
+// to read as one sentence when the image and the text appear together.
+const SHARE_DESCRIPTION =
+  'Enter your address and see your elected officials, elections, and voter registration info.';
+
 export const metadata = {
   // The template gives every child page a distinct title without repeating the
   // brand by hand. Pages set a bare `title` and get "Thing | XUsDemocracy".
@@ -22,12 +31,12 @@ export const metadata = {
     locale: 'en_US',
     url: SITE_URL,
     title: 'XUsDemocracy | Know Who Represents You',
-    description: DESCRIPTION
+    description: SHARE_DESCRIPTION
   },
   twitter: {
     card: 'summary_large_image',
     title: 'XUsDemocracy | Know Who Represents You',
-    description: DESCRIPTION
+    description: SHARE_DESCRIPTION
   },
   // Read from the environment so no placeholder token is ever committed.
   // Add both in Vercel after verifying the domain in Google Search Console and
@@ -105,15 +114,10 @@ export default function RootLayout({ children }) {
         <Header />
         <main>{children}</main>
         <footer className="site-footer">
-          {/* Also the crawl path to the 52 state pages. A sitemap alone gets
-              them discovered; an internal link is what gets them ranked. */}
-          <nav className="footer-nav">
-            <a href="/?new=1">Search</a>
-            <a href="/states">States</a>
-            <a href="/calendars">Election Calendars</a>
-            <a href="/democracy">Democracy</a>
-            <a href="/why">Who We Are</a>
-          </nav>
+          {/* The nav that used to live here (Search / States / Calendars /
+              Democracy / Who We Are) is gone; the drawer in Header.js covers
+              the same links, plus "All States" now carries the crawl-path
+              job to the 52 state pages that this nav used to do. */}
           <p>
             <strong>Nonpartisan</strong> · No ads · No tracking · Free forever
           </p>
@@ -125,7 +129,9 @@ export default function RootLayout({ children }) {
             project, OpenStates, NCSL, NGA, and official government sources. Always verify election details with your{' '}
             <a href="https://vote.gov" target="_blank" rel="noopener noreferrer">official state election office</a>.
           </p>
-          <p className="footer-xsl">Created by XUsAll · Part of the XUsAll family</p>
+          <p className="footer-xsl">
+            Created by <a href="https://www.xusall.com">XUsAll</a> · Part of the XUsAll family
+          </p>
         </footer>
       </body>
     </html>

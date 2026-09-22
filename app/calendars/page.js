@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FIPS_TO_STATE } from '@/lib/states';
-import { googleCalendarUrl, icsUrl, webcalUrl } from '@/lib/site';
+import { CONTACT_EMAIL, googleCalendarUrl, icsUrl, webcalUrl } from '@/lib/site';
 
 const STATES = Object.values(FIPS_TO_STATE).sort((a, b) => a[1].localeCompare(b[1]));
 
@@ -54,7 +54,7 @@ export default function Calendars() {
 
       <p className="feedback-note">
         Spot a wrong or outdated date? Email{' '}
-        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> and
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and
         we&apos;ll fix it.
       </p>
     </div>

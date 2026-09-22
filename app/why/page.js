@@ -69,7 +69,7 @@ export default function WhoWeAre() {
       <p>
         Some of our data comes from live government feeds and some is maintained by hand, which
         means errors are possible. If a name, date, or district looks wrong, tell us at{' '}
-        <a href="mailto:xusalldevelopment@gmail.com">xusalldevelopment@gmail.com</a> and
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and
         we&apos;ll fix it. We would rather be corrected than be confidently wrong.
       </p>
       <p>

@@ -1,10 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="XUsDemocracy">
-  <!-- Favicon. The wordmark's X, which is the one glyph that reads at 16px.
-       Dark ground in both themes so it stays legible against a light browser
-       tab and a dark one alike. Colors are the dark-theme --bg and --red from
-       app/globals.css; keep them in sync if the palette moves. -->
-  <rect width="64" height="64" rx="14" fill="#0a0c10"/>
-  <path d="M17 16 L32 32 L47 16 M17 48 L32 32 L47 48"
-        stroke="#e2574f" stroke-width="9"
-        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Favicon. The courthouse from the search page's "every level of
+       government" pitch icon, built as filled shapes rather than strokes
+       because a 1.4-weight stroke disappears at 16px. Blue ground and red
+       base band are the light-theme --blue and --red from app/globals.css;
+       keep them in sync if the palette moves. Same ground on both themes,
+       unlike the page, so the tab stays legible against a light and dark
+       browser chrome alike. app/apple-icon.js renders the same mark by hand
+       for the home-screen icon; keep the two in sync. -->
+  <rect width="64" height="64" rx="14" fill="#0A84FF"/>
+  <polygon points="32,12 50,26 14,26" fill="#ffffff"/>
+  <rect x="16" y="30" width="6" height="20" fill="#ffffff"/>
+  <rect x="29" y="30" width="6" height="20" fill="#ffffff"/>
+  <rect x="42" y="30" width="6" height="20" fill="#ffffff"/>
+  <rect x="12" y="50" width="40" height="4" fill="#ffffff"/>
+  <rect x="10" y="56" width="44" height="6" fill="#FF3B30"/>
 </svg>

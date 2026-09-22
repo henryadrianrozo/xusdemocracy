@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Wordmark from '@/components/Wordmark';
+import { CourthouseIcon, GroupIcon } from '@/components/icons';
 
 function Home() {
   const [address, setAddress] = useState('');
@@ -94,21 +95,12 @@ function Home() {
 
       <section className="pitch">
         <div className="pitch-item">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" strokeWidth="1.4">
-            <line x1="4" y1="21" x2="20" y2="21" />
-            <rect x="6" y="10" width="12" height="11" />
-            <polyline points="4,10 12,4 20,10" />
-            <line x1="9" y1="14" x2="9" y2="18" />
-            <line x1="15" y1="14" x2="15" y2="18" />
-          </svg>
+          <CourthouseIcon size={28} />
           <h2>Every level of government</h2>
           <p>Congress, your governor, and your state legislature today. Local officials as we grow.</p>
         </div>
         <div className="pitch-item">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" strokeWidth="1.4">
-            <circle cx="12" cy="8" r="3.4" />
-            <path d="M5 20c0-4 3.1-6.5 7-6.5s7 2.5 7 6.5" strokeLinecap="round" />
-          </svg>
+          <GroupIcon size={28} />
           <h2>Contact &amp; accountability</h2>
           <p>
             Direct phone, email, and office links for every official, so you can reach them and
