@@ -334,12 +334,15 @@ function NationalBlock({ national }) {
         officials, and they still shape a great deal of federal policy.
       </p>
 
-      <div className="branch-group">
-        <h4 className="branch-label">Judicial</h4>
-        <details className="national-details">
-          <summary>
-            The Supreme Court <span className="national-count">{supremeCourt.length}</span>
-          </summary>
+      <details className="branch-card">
+        <summary className="branch-card-summary">
+          <span className="branch-card-heading">
+            <span className="branch-card-title">Judicial</span>
+            <span className="branch-card-subtitle">The Supreme Court</span>
+          </span>
+          <span className="national-count">{supremeCourt.length}</span>
+        </summary>
+        <div className="branch-card-body">
           <p className="national-note">
             Nominated by a President, confirmed by the Senate, and seated for life. They have
             the final say on what federal law and the Constitution mean.
@@ -350,21 +353,23 @@ function NationalBlock({ national }) {
               Learn more about the Court on supremecourt.gov →
             </a>
           </p>
-        </details>
-        <p className="branch-note">
-          The Supreme Court is the top of a much larger system. Roughly 870 other federal
-          judges hear the cases that never reach it, and they are appointed for life too.{' '}
-          <a href="/democracy#branches">How the courts fit in</a>
-        </p>
-      </div>
+          <p className="branch-note">
+            The Supreme Court is the top of a much larger system. Roughly 870 other federal
+            judges hear the cases that never reach it, and they are appointed for life too.{' '}
+            <a href="/democracy#branches">How the courts fit in</a>
+          </p>
+        </div>
+      </details>
 
-      <div className="branch-group">
-        <h4 className="branch-label">Executive</h4>
-        <details className="national-details">
-          <summary>
-            The Cabinet{' '}
-            <span className="national-count">{departments.length + cabinetRank.length}</span>
-          </summary>
+      <details className="branch-card">
+        <summary className="branch-card-summary">
+          <span className="branch-card-heading">
+            <span className="branch-card-title">Executive</span>
+            <span className="branch-card-subtitle">The Cabinet</span>
+          </span>
+          <span className="national-count">{departments.length + cabinetRank.length}</span>
+        </summary>
+        <div className="branch-card-body">
           <p className="national-note">
             Appointed by the President and confirmed by the Senate. The 15 executive
             departments are listed in the order they would succeed to the presidency, which is
@@ -375,15 +380,18 @@ function NationalBlock({ national }) {
             Cabinet rank, but outside the departments and outside the line of succession.
           </p>
           <PersonList people={cabinetRank} />
-        </details>
-      </div>
+        </div>
+      </details>
 
-      <div className="branch-group">
-        <h4 className="branch-label">Legislative</h4>
-        <details className="national-details">
-          <summary>
-            Congressional leadership <span className="national-count">{leadership.length}</span>
-          </summary>
+      <details className="branch-card">
+        <summary className="branch-card-summary">
+          <span className="branch-card-heading">
+            <span className="branch-card-title">Legislative</span>
+            <span className="branch-card-subtitle">Congressional leadership</span>
+          </span>
+          <span className="national-count">{leadership.length}</span>
+        </summary>
+        <div className="branch-card-body">
           <p className="national-note">
             You elect these people to Congress, but their colleagues elect them to these roles.
             They decide what reaches a vote at all, which is why they matter when you are
@@ -391,12 +399,14 @@ function NationalBlock({ national }) {
             <a href="/democracy#congress">How Congress organizes itself</a>
           </p>
           <PersonList people={leadership} faces onOpenPortrait={setPortrait} />
-        </details>
-      </div>
+        </div>
+      </details>
 
-      <p className="branch-crosslink">
-        <a href="/democracy#branches">Learn how the three branches fit together →</a>
-      </p>
+      <div className="cta-row">
+        <a className="cta-link cta-link-blue" href="/democracy#branches">
+          Learn how the three branches fit together →
+        </a>
+      </div>
 
       {portrait && <PortraitViewer rep={portrait} onClose={() => setPortrait(null)} />}
     </div>

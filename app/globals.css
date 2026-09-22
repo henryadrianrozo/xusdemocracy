@@ -816,13 +816,11 @@ details[open] > summary .caret { transform: rotate(90deg); }
 
 /* The rest of the federal government: President, Cabinet, Supreme Court.
    Deliberately quieter than the rep cards above it. */
-.national-block {
-  margin-top: 10px;
-  padding: 20px;
-  border: 1px dashed var(--border);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--text) 2%, transparent);
-}
+/* A plain stacking container, not a box: the three .branch-card elements it
+   holds now carry the visual containment themselves (matching RepCard's
+   white-card language), so a dashed border/tinted background around three
+   solid white cards would read as double-boxing. */
+.national-block { margin-top: 10px; }
 .national-name { color: var(--text); font-weight: 600; font-size: 0.94rem; }
 .national-role { color: var(--muted); font-size: 0.86rem; }
 /* Cabinet titles that link to their department's homepage: a secondary
@@ -832,18 +830,36 @@ details[open] > summary .caret { transform: rotate(90deg); }
 a.national-role { text-decoration: none; }
 a.national-role:hover { text-decoration: underline; }
 
-.national-details { border-top: 1px solid var(--border); }
-.national-details summary {
-  cursor: pointer;
-  padding: 11px 0;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--text);
+/* Each of the three "Appointed and Chosen" branches: white surface, solid
+   border, same radius as .rep-card, so it reads as the same kind of object
+   as every other card on the page instead of a dashed sub-box. */
+.branch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.branch-card + .branch-card { margin-top: 14px; }
+.branch-card-summary {
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
 }
-.national-details summary:hover { color: var(--blue); }
+.branch-card-summary::-webkit-details-marker { display: none; }
+.branch-card-summary:hover .branch-card-title { color: var(--blue-ink); }
+.branch-card-heading { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+/* Mirrors .rep-info h3 / .rep-role, the same name-then-role pairing a
+   RepCard uses, just applied to a branch instead of a person. Title is
+   slightly smaller than .rep-info h3's 1.12rem since there is no avatar
+   beside it competing for weight. */
+.branch-card-title { font-weight: 700; font-size: 1.02rem; color: var(--text); }
+.branch-card-subtitle { color: var(--muted); font-size: 0.9rem; }
+.branch-card-body { margin-top: 16px; }
+/* The button closing the section, after the last card. */
+.national-block .cta-row { margin-top: 14px; }
 .national-count {
   font-size: 0.74rem;
   font-weight: 600;
@@ -895,16 +911,6 @@ a.national-role:hover { text-decoration: underline; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Branch grouping inside the national block. */
-.branch-group { margin-top: 6px; }
-.branch-label {
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 14px 0 2px;
-}
 .branch-note {
   color: var(--muted);
   font-size: 0.83rem;
@@ -914,6 +920,9 @@ a.national-role:hover { text-decoration: underline; }
 }
 /* Directly under a list that already carries its own bottom margin. */
 .branch-note-tight { margin-top: 0; }
+/* Still used on app/states/[slug]/page.js's "Find your U.S. representative
+   and state legislators" link -- not part of the "Appointed and Chosen"
+   redesign, which uses .cta-row/.cta-link instead. */
 .branch-crosslink { margin-top: 18px; font-size: 0.9rem; }
 .branch-crosslink a { text-decoration: none; font-weight: 600; }
 .branch-crosslink a:hover { text-decoration: underline; }
