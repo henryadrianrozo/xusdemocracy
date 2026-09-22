@@ -4,12 +4,12 @@
 export const metadata = {
   title: 'Election Calendars for Every State',
   description:
-    'Subscribe to your state election calendar and never miss a primary, runoff, or Election Day. Free .ics feeds for all 50 states, no account needed.',
+    'Subscribe to your state election calendar and never miss a primary, runoff, or Election Day. Free .ics feeds for all 52 states and territories, no account needed.',
   alternates: { canonical: '/calendars' },
   openGraph: {
     title: 'Election Calendars for Every State',
     description:
-      'Free, auto-updating election calendar feeds for all 50 states. Works with Apple Calendar, Google Calendar, and Outlook.',
+      'Free, auto-updating election calendar feeds for all 52 states and territories. Works with Apple Calendar, Google Calendar, and Outlook.',
     url: '/calendars'
   }
 };

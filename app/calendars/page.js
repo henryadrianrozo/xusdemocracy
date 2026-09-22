@@ -26,8 +26,8 @@ export default function Calendars() {
         <h1>Election calendars</h1>
         <p>
           Subscribe once and your calendar app reminds you automatically, including one week
-          before every Election Day. Includes your state&apos;s 2026 primaries and runoffs.
-          Free, no account, auto-updates as dates change.
+          before every Election Day. Includes your state&apos;s primaries, runoffs, and
+          general elections. Free, no account, auto-updates as dates change.
         </p>
         <span className="hero-privacy">
           Apple Calendar and Outlook take the subscribe link directly. Google opens its

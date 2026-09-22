@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RepCard, { PortraitViewer, initials, partyMeta } from '@/components/RepCard';
-import { googleCalendarUrl, icsUrl, webcalUrl } from '@/lib/site';
+import { CONTACT_EMAIL, googleCalendarUrl, icsUrl, webcalUrl } from '@/lib/site';
 
 function ordinal(n) {
   const s = ['th', 'st', 'nd', 'rd'];
@@ -719,7 +719,7 @@ export default function Officials() {
             <div className="election-card" key={el.date + el.name}>
               <div className="election-date">
                 <span className="election-day-count">{el.daysUntil}</span>
-                <span>days away</span>
+                <span>{plural(el.daysUntil, 'day away', 'days away')}</span>
               </div>
               <div className="election-info">
                 <h3>{el.name}</h3>
@@ -802,7 +802,7 @@ export default function Officials() {
 
         <p className="feedback-note">
           Something looks off? Wrong rep, bad date, missing info?{' '}
-          <a href="mailto:hello@xusall.com?subject=XUsDemocracy%3A%20something%20looks%20off">
+          <a href={`mailto:${CONTACT_EMAIL}?subject=XUsDemocracy%3A%20something%20looks%20off`}>
             Let us know
           </a>{' '}
           and we&apos;ll fix it.

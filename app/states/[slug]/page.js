@@ -5,7 +5,7 @@ import { getFederalReps } from '@/lib/federal';
 import { getGovernor } from '@/lib/governors';
 import { getLegislature } from '@/lib/legislatures';
 import { getRegistrationDeadline } from '@/lib/registration';
-import { googleCalendarUrl, SITE_NAME, SITE_URL, webcalUrl } from '@/lib/site';
+import { CONTACT_EMAIL, googleCalendarUrl, SITE_NAME, SITE_URL, webcalUrl } from '@/lib/site';
 import { ALL_STATES, DELEGATE_ONLY, stateFromSlug, stateSlug } from '@/lib/states';
 
 // One page per state and territory, statically generated.
@@ -34,6 +34,10 @@ function longDate(iso) {
     month: 'long',
     day: 'numeric'
   });
+}
+
+function plural(n, one, many) {
+  return n === 1 ? one : many;
 }
 
 // Everything a page needs, assembled once so generateMetadata and the page
@@ -232,7 +236,7 @@ export default async function StatePage({ params }) {
                 <div className="election-card" key={el.date + el.name}>
                   <div className="election-date">
                     <span className="election-day-count">{el.daysUntil}</span>
-                    <span>days away</span>
+                    <span>{plural(el.daysUntil, 'day away', 'days away')}</span>
                   </div>
                   <div className="election-info">
                     <h3>{el.name}</h3>
@@ -350,7 +354,7 @@ export default async function StatePage({ params }) {
           </strong>{' '}
           before you rely on a date. Spot an error?{' '}
           <a
-            href={`mailto:hello@xusall.com?subject=XUsDemocracy%3A%20${encodeURIComponent(name)}`}
+            href={`mailto:${CONTACT_EMAIL}?subject=XUsDemocracy%3A%20${encodeURIComponent(name)}`}
           >
             Let us know
           </a>{' '}
