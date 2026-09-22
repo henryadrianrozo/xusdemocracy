@@ -56,6 +56,9 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   transition: background 0.2s ease, color 0.2s ease;
+  /* Cheap insurance: nothing rendered today is an unbreakable string, but
+     this is one line against the next data value that is. */
+  overflow-wrap: break-word;
 }
 
 a { color: var(--blue); }
@@ -126,6 +129,15 @@ a { color: var(--blue); }
   display: inline-block;
 }
 
+/* The two 1fr side columns above only share a width, and so only keep the
+   wordmark truly centered, while each exceeds .theme-toggle's own
+   min-content (~74px, the widest side item). Below ~354px that stops being
+   true; tightening padding and the toggle here buys back the margin. */
+@media (max-width: 360px) {
+  .site-header { padding-inline: 14px; }
+  .theme-toggle { padding: 6px 10px; gap: 6px; }
+}
+
 /* Sidebar drawer */
 .drawer-overlay {
   position: fixed;
@@ -144,12 +156,22 @@ a { color: var(--blue); }
   border-right: 1px solid var(--border);
   z-index: 50;
   transform: translateX(-100%);
-  transition: transform 0.2s ease;
+  /* This drawer is permanently in the DOM, deliberately, so its "All
+     States" link is crawlable on every route whether or not the drawer is
+     open. transform alone hides it visually but leaves its links in the
+     tab order and the accessibility tree, contradicting the aria-hidden
+     Header.js sets on it. visibility does what aria-hidden is already
+     claiming: drops it from both. */
+  visibility: hidden;
+  transition: transform 0.2s ease, visibility 0.2s ease;
   display: flex;
   flex-direction: column;
   padding: 1.1rem 1.25rem;
+  /* No scroll before this: a short landscape viewport clipped the bottom
+     nav items and the XUsAll attribution with no way to reach them. */
+  overflow-y: auto;
 }
-.drawer-open { transform: translateX(0); }
+.drawer-open { transform: translateX(0); visibility: visible; }
 .drawer-top {
   display: flex;
   justify-content: space-between;
@@ -204,9 +226,15 @@ a { color: var(--blue); }
   margin: 0 0 40px;
 }
 .hero-wordmark { margin: 0 0 24px; }
-.hero-wordmark .wordmark { font-size: clamp(2.4rem, 7.5vw, 3.9rem); letter-spacing: -0.03em; }
+/* min(), not clamp(): below the 512px point where clamp()'s 2.4rem floor
+   stops responding to viewport width, the nowrap + inline-flex wordmark
+   can't shrink below its own min-content and overflows the container --
+   below ~315px at a default root font size, and below ~375px under
+   browser/OS font scaling (Chrome "Large" text, Android scaling), since a
+   rem-based floor inflates with the user's font preference but vw does not. */
+.hero-wordmark .wordmark { font-size: min(3.9rem, 12vw); letter-spacing: -0.03em; }
 
-.lookup-form { display: flex; flex-wrap: wrap; gap: 10px; max-width: 560px; margin: 0 auto; }
+.lookup-form { display: flex; flex-wrap: wrap; gap: 10px; max-width: 560px; margin: 0 auto; justify-content: center; }
 .lookup-form input {
   flex: 1 1 260px;
   padding: 15px 18px;
@@ -262,6 +290,11 @@ a { color: var(--blue); }
   margin-top: 1rem;
   color: var(--red);
   background: color-mix(in srgb, var(--red) 8%, transparent);
+  /* Plain fallback first: Safari <16.2 drops the whole shorthand on an
+     unsupported color-mix() rather than just the one value, so without this
+     the border (and, without a similar fallback anywhere it happens to
+     matter, the whole card) disappears instead of just losing the tint. */
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
@@ -321,6 +354,7 @@ a { color: var(--blue); }
   flex-direction: column;
   align-items: flex-start;
   background: color-mix(in srgb, var(--red) 6%, var(--surface));
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
   border-radius: var(--radius-card);
   padding: 14px 16px;
@@ -370,6 +404,7 @@ a { color: var(--blue); }
   align-items: center;
   justify-content: space-between;
   background: color-mix(in srgb, var(--blue) 7%, var(--surface));
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
   border-radius: var(--radius-card);
   padding: 18px 20px;
@@ -465,9 +500,6 @@ details[open] > summary .caret { transform: rotate(90deg); }
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
-.major-body > .sub-title:first-child,
-.major-body > .sub-section:first-child > .sub-title { margin-top: 0; }
-
 /* Congress and Executive. The pill is the whole affordance, so the summary has
    to look like the heading it replaces and carry no marker of its own. */
 .sub-title-toggle {
@@ -616,7 +648,6 @@ details[open] > summary .caret { transform: rotate(90deg); }
 }
 .party-pill.party-dem { color: var(--dem); background: color-mix(in srgb, var(--dem) 10%, transparent); }
 .party-pill.party-rep { color: var(--rep); background: color-mix(in srgb, var(--rep) 10%, transparent); }
-.rep-term { color: var(--muted); font-size: 0.82rem; margin: 0 0 12px; }
 
 /* Term facts: how long they have served, when they were last elected, when
    the current term ends. Dot-separated so it reads as one line. */
@@ -631,9 +662,14 @@ details[open] > summary .caret { transform: rotate(90deg); }
   font-size: 0.82rem;
 }
 .rep-facts li { display: inline-flex; align-items: center; }
-.rep-facts li + li::before {
+/* On :not(:last-child)::after rather than li + li::before: with a wrapped
+   row (three federal facts at ~375px), a leading ::before put a stray
+   centered middot at the start of the new line. A trailing ::after on
+   every-but-the-last item can only ever be the last thing on its own line,
+   never the first thing on the next. */
+.rep-facts li:not(:last-child)::after {
   content: '·';
-  margin-right: 8px;
+  margin-left: 8px;
   opacity: 0.6;
 }
 
@@ -670,6 +706,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* Without this, a short landscape viewport (image height + caption +
+     padding can exceed 70vh + ~126px) clipped the figure with no way to
+     scroll to the close button. */
+  overflow: auto;
 }
 .portrait-figure {
   position: relative;
@@ -682,7 +722,7 @@ details[open] > summary .caret { transform: rotate(90deg); }
 .portrait-figure img {
   display: block;
   width: 100%;
-  max-height: 70vh;
+  max-height: 62vh;
   object-fit: contain;
   border-radius: 10px;
   background: var(--raised);
@@ -765,16 +805,6 @@ details[open] > summary .caret { transform: rotate(90deg); }
   border-radius: 14px;
   background: color-mix(in srgb, var(--text) 2%, transparent);
 }
-.national-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-  padding: 9px 0;
-  border-top: 1px solid var(--border);
-}
-.national-row-link { text-decoration: none; }
-.national-row-link:hover .national-name { text-decoration: underline; }
 .national-name { color: var(--text); font-weight: 600; font-size: 0.94rem; }
 .national-role { color: var(--muted); font-size: 0.86rem; }
 
@@ -814,11 +844,16 @@ details[open] > summary .caret { transform: rotate(90deg); }
   padding: 7px 0;
 }
 .national-list li + li { border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
-/* Rows carrying a .face-avatar need it vertically centered against the two
+/* Rows carrying a .face-avatar need it vertically centered against the
    lines of text beside it; baseline alignment (the default above) puts the
    circle too high. Scoped to these rows so the Cabinet's plain rows are
-   unaffected. */
-.national-list-face { align-items: center; }
+   unaffected.
+   Compound selector, not just .national-list-face: a single class
+   (specificity 0,1,0) loses to .national-list li above (a class plus a
+   type, 0,1,1) regardless of source order, so the plain-class version of
+   this rule never actually applied -- the photo stayed pinned to the first
+   line's baseline no matter what this comment said it should do. */
+.national-list li.national-list-face { align-items: center; }
 .national-entry { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .national-does {
   flex-basis: 100%;
@@ -871,6 +906,7 @@ details[open] > summary .caret { transform: rotate(90deg); }
 /* Registration deadline callout */
 .deadline-box {
   background: color-mix(in srgb, var(--red) 6%, var(--surface));
+  border: 1px solid var(--border);
   border: 1px solid color-mix(in srgb, var(--red) 28%, transparent);
   border-radius: var(--radius-card);
   padding: 18px 20px;
@@ -896,9 +932,19 @@ details[open] > summary .caret { transform: rotate(90deg); }
   max-width: 60ch;
 }
 /* The countdown card leading the Register and Where and When blocks. Its
-   paragraph must not pick up the muted, 60ch explainer style of .action-block p. */
+   paragraph must not pick up the muted, 60ch explainer style of .action-block p.
+   font-size/line-height belong here too: .action-block p (above) and
+   .election-info p (the countdown card's own type, set elsewhere) are equal
+   specificity, so source order alone decided which one this paragraph got,
+   and the same election-style text was silently rendering at two different
+   sizes depending on which card it sat in. */
 .countdown-card { margin-bottom: 14px; }
-.action-block .countdown-card p { max-width: none; margin-bottom: 0; }
+.action-block .countdown-card p {
+  max-width: none;
+  margin-bottom: 0;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
 .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
 .cta-link {
   display: inline-block;
@@ -984,7 +1030,10 @@ details[open] > summary .caret { transform: rotate(90deg); }
 
 /* Why page */
 .prose { max-width: 680px; margin: 0 auto; padding: 2.5rem 24px 4rem; }
-.prose h1 { color: var(--text); margin-bottom: 1rem; letter-spacing: -0.025em; font-weight: 800; }
+/* No explicit size before this meant Safari/Firefox's nested-article UA
+   default (~24px, and inconsistent between browsers) won, out of step with
+   every other page's h1. */
+.prose h1 { color: var(--text); margin-bottom: 1rem; letter-spacing: -0.025em; font-weight: 800; font-size: clamp(1.9rem, 5vw, 2.6rem); }
 .prose h2 { color: var(--text); margin: 1.75rem 0 0.5rem; font-size: 1.25rem; }
 .prose p { margin-bottom: 1rem; color: var(--muted); }
 .prose p strong { color: var(--text); }
@@ -1014,6 +1063,11 @@ details[open] > summary .caret { transform: rotate(90deg); }
   .election-info { flex-basis: auto; }
   /* Stack the card and center the portrait so it leads. */
   .rep-card { flex-direction: column; align-items: center; text-align: center; }
+  /* Same fix as .election-info above: .rep-card is now a column, so
+     .rep-info's 220px flex-basis becomes a height, not a width, leaving
+     dead space below shorter cards (worst on governors, which have no
+     phone/email/contact-form facts). */
+  .rep-info { flex-basis: auto; }
   .rep-avatar { width: 104px; height: 104px; }
   .rep-meta, .rep-actions { justify-content: center; }
   .save-prompt { flex-direction: column; align-items: flex-start; }

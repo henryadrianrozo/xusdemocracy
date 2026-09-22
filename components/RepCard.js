@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function initials(name) {
   return name.split(' ').filter(Boolean).map((w) => w[0]).slice(0, 2).join('');
@@ -111,14 +111,32 @@ function saveContact(rep) {
 // so the small face circles in the "Appointed and Chosen" block (Supreme
 // Court, congressional leadership) can reuse it instead of a second lightbox.
 export function PortraitViewer({ rep, onClose }) {
+  const closeRef = useRef(null);
+
+  // Two different triggers open this (the card's own photo, and the small
+  // face circles in "Appointed and Chosen"), so rather than thread a ref
+  // through both, capture whatever was actually focused when this mounted
+  // and restore it on unmount. Focus moves onto the close button on open,
+  // the same pattern the drawer in Header.js uses.
   useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    closeRef.current?.focus();
     const onKey = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
   }, [onClose]);
 
   return (
-    <div className="portrait-overlay" onClick={onClose} role="dialog" aria-modal="true">
+    <div
+      className="portrait-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Portrait of ${rep.name}`}
+    >
       <figure className="portrait-figure" onClick={(e) => e.stopPropagation()}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={rep.photoLarge || rep.photo} alt={`Official portrait of ${rep.name}`} />
@@ -126,7 +144,7 @@ export function PortraitViewer({ rep, onClose }) {
           <strong>{rep.name}</strong>
           <span>{rep.role}</span>
         </figcaption>
-        <button className="portrait-close" onClick={onClose} aria-label="Close portrait">
+        <button ref={closeRef} className="portrait-close" onClick={onClose} aria-label="Close portrait">
           ✕
         </button>
       </figure>

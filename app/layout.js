@@ -98,7 +98,15 @@ export const viewport = {
 
 // Applies the saved theme before first paint to avoid a flash of the wrong
 // theme. Light is the default; dark is opt-in via the header toggle.
-const themeInit = `try{document.documentElement.dataset.theme=localStorage.getItem('xud-theme')||'light'}catch(e){document.documentElement.dataset.theme='light'}`;
+//
+// Also syncs both meta[name="theme-color"] tags (declared in `viewport`
+// above, one per prefers-color-scheme) to the resolved theme. Those two
+// static tags alone match the OS, not the site's own toggle: a user on a
+// light OS who switches the page to dark otherwise keeps a light-colored
+// browser chrome above a dark page. This runs in the same blocking script
+// that already exists to prevent a theme flash, so there is no extra risk
+// of one; Header.js's toggleTheme() repeats the same two lines on click.
+const themeInit = `try{var t=localStorage.getItem('xud-theme')||'light';document.documentElement.dataset.theme=t;var c=t==='dark'?'#0a0c10':'#faf8f4';document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)})}catch(e){document.documentElement.dataset.theme='light'}`;
 
 export default function RootLayout({ children }) {
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Wordmark from './Wordmark';
 import { CourthouseIcon } from './icons';
 
@@ -44,6 +44,8 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const [hasSaved, setHasSaved] = useState(false);
+  const menuBtnRef = useRef(null);
+  const drawerCloseRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -53,10 +55,33 @@ export default function Header() {
     } catch {}
   }, []);
 
+  // Escape closes the drawer; focus moves into it on open (onto the close
+  // button, the first reachable control) and back to the ☰ button on close,
+  // matching what PortraitViewer already does for the portrait lightbox.
+  useEffect(() => {
+    if (!open) return;
+    drawerCloseRef.current?.focus();
+    function onKeyDown(e) {
+      if (e.key === 'Escape') closeDrawer();
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  function closeDrawer() {
+    setOpen(false);
+    menuBtnRef.current?.focus();
+  }
+
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
     document.documentElement.dataset.theme = next;
+    // Kept in sync with the inline script in app/layout.js that does the
+    // same thing on first paint; see the comment there for why.
+    const color = next === 'dark' ? '#0a0c10' : '#faf8f4';
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
     try {
       localStorage.setItem('xud-theme', next);
     } catch {}
@@ -88,6 +113,7 @@ export default function Header() {
       <header className="site-header">
         <div className="header-side">
           <button
+            ref={menuBtnRef}
             className="menu-btn"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
@@ -98,18 +124,27 @@ export default function Header() {
         </div>
         <Wordmark href={homeHref} />
         <div className="header-side header-side-end">
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle color theme">
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-pressed={theme === 'dark'}
+          >
             <span className="theme-dot" />
             {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
         </div>
       </header>
 
-      {open && <div className="drawer-overlay" onClick={() => setOpen(false)} />}
-      <aside className={`drawer ${open ? 'drawer-open' : ''}`} aria-hidden={!open}>
+      {open && <div className="drawer-overlay" onClick={closeDrawer} />}
+      <aside
+        className={`drawer ${open ? 'drawer-open' : ''}`}
+        aria-hidden={!open}
+        aria-label="Menu"
+      >
         <div className="drawer-top">
           <Wordmark href={null} />
-          <button className="drawer-close" onClick={() => setOpen(false)} aria-label="Close menu">
+          <button ref={drawerCloseRef} className="drawer-close" onClick={closeDrawer} aria-label="Close menu">
             ✕
           </button>
         </div>
@@ -117,7 +152,7 @@ export default function Header() {
           {/* Keyed on label, not href: with no saved address, Search and My
               Officials both point at the form and would collide on href. */}
           {nav.map((item) => (
-            <a key={item.label} href={item.href} onClick={() => setOpen(false)}>
+            <a key={item.label} href={item.href} onClick={closeDrawer}>
               <span className="drawer-icon">{item.icon}</span> {item.label}
             </a>
           ))}
